@@ -27,3 +27,8 @@ Current version: **v26**
 1. Disaster
 
    ![Disaster](screenshots/screenshot4.png)
+
+## TODO
+
+- Switch to a custom Python + Jinja2 script.
+- Remove extra fields with `*UNKNOWN*` records.
