@@ -5,13 +5,16 @@ These are my templates for HTML e-mail notifications
 
 ## Examples
 *Chrome rendering
-1. Warning  
+1. Warning
+   
    ![Warning](screenshots/screenshot1.png)
 
-2. High  
+3. High
+   
    ![High](screenshots/screenshot2.png)
 
-3. Resolved  
+4. Resolved
+   
    ![Resolved](screenshots/screenshot3.png)
 
 Real messages in MS Outlook look prettier.
@@ -19,4 +22,5 @@ Real messages in MS Outlook look prettier.
 *MS Outlook (Office 365) rendering 
 
 4. Disaster
+   
    ![Disaster](screenshots/screenshot4.png)
