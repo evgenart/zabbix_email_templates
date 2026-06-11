@@ -1,0 +1,2009 @@
+Zabbix 7.4.x Outlook-friendly HTML Email Templates
+Compact severity-color version v26
+Server name used in links/footer: zabbix01.example.local
+
+Purpose:
+- Outlook-friendly HTML message templates for Zabbix Email media type.
+- Trigger templates: Problem, Problem recovery, Problem update.
+- Non-trigger templates: Discovery, Autoregistration, Service, Service recovery, Service update, Internal problem, Internal problem recovery.
+
+Current design notes:
+- v26 active template code is rolled back to the last good v23 behavior.
+- Message width is compact but can expand consistently when long text needs room.
+- Action buttons use the v21 bordered-wrapper design so Outlook keeps the bottom border visible without double-width borders in browser previews.
+- Footer has three equal visual sections: server link, severity text, linked tags.
+- Item/Value table intentionally keeps four rows for now.
+- Trigger templates still contain temporary native-template logic around Item/Value rows. This is only a best-effort workaround for Zabbix indexed item macros that may resolve to *UNKNOWN*.
+
+TODO for future Zabbix script media type:
+- Replace these native HTML message templates with a Python script media type.
+- Build the HTML from these templates as a base.
+- Remove all template-side unknown/hiding/substitution logic.
+- Query Zabbix/API data directly in Python.
+- Render only real item rows.
+- Skip non-existing items entirely.
+- Deduplicate repeated items by itemid.
+- URL-encode tag-search links safely in Python instead of relying on regex substitutions in Zabbix templates.
+
+Severity color mapping used for Problem and Problem update:
+- Disaster: soft red
+- High: soft pink
+- Average: soft orange
+- Warning: soft yellow
+- Information / Informational / Not classified / others: soft blue
+
+Recovery templates:
+- Main header and issue header: soft green
+- Text: ✔ Problem resolved
+- Previous severity badge: still colored by original severity
+
+Version history:
+v4:
+- Fixed Outlook class handling by using exactly one severity class on colored elements:
+  sevBlock{TRIGGER.SEVERITY}, sevBadge{TRIGGER.SEVERITY}.
+
+v5:
+- Removed redundant top status/header band from Problem, Problem recovery, and Problem update.
+- Renamed action links to Graph / Item / Trigger / Event.
+- Styled Item, Trigger, and Event like the Graph button.
+
+v6:
+- Removed Event ID detail rows where the Event action button already exists.
+- Recolored trigger titles and action buttons by severity/recovery hue.
+- Added right-side status icons in the issue header.
+
+v7:
+- Restored native warning/check icon coloring behavior.
+- Rebuilt Graph / Item / Trigger / Event as Outlook-friendly table-cell buttons.
+- Reduced left/right content padding from 16px to 8px.
+
+v8:
+- Updated Problem, Problem recovery, and Problem update action buttons for Zabbix 7.4+ HTTPS routes.
+- Added the direct chart-image button using the framed-picture Unicode symbol.
+- Replaced trigger footers with the three-part footer.
+
+v10:
+- Reordered action buttons to: image, Graph, Item, Trigger, Event.
+- Rebuilt trigger footers as equal-width sections with subtle dot separators.
+- Added #tag rendering with macro functions where tag names/values are URL-safe.
+
+v11:
+- Made zabbix01.example.local in the footer a link to https://zabbix01.example.local/ while preserving footer styling.
+- Removed # from the footer severity text.
+- Converted trigger footer tags into same-style search links where tag names/values are URL-safe.
+
+v12:
+- Suppressed footer tag entries matching Application: Interface ...
+- Trimmed the space after tag colon for generated tag-search URL values.
+
+v13:
+- Routed Application:* tag links to the Items search page and other tags to the Triggers search page.
+- Rebuilt Item values as a two-column Item / Value table.
+- Added first attempt at unknown item-row handling.
+
+v14:
+- Kept the item table inside the message width with fixed table layout and wrapping.
+- Removed the separate “Item values” title above the table.
+
+v15:
+- Made the Item/Value table more compact.
+
+v16:
+- Reduced overall template width and aligned header, details table, item table, action row, and footer to the same compact width.
+- Changed Item/Value table to fill the compact content width.
+
+v17:
+- Allowed compact 520px message width to expand consistently up to 676px for long text.
+- Relaxed forced wrapping so text uses available width before wrapping.
+
+v18:
+- Removed Operational data rows from trigger templates.
+- Footer severity text changed from “Severity: X” to “Severity X”.
+- Added another attempt to hide unknown rows.
+
+v19:
+- Attempted to prevent Outlook button bottom-border loss with a table-level bottom border.
+- Superseded because it could create double-width borders.
+
+v20:
+- Attempted to prevent Outlook button bottom-border loss with a dedicated 1px row.
+- Superseded because it rendered incorrectly in browser previews.
+
+v21:
+- Replaced v19/v20 border approaches with a single bordered wrapper cell around the action buttons.
+- This kept one clean visible border in browser previews and fixed the Outlook missing-bottom-border issue.
+
+v23:
+- Removed severity from the colored header meta line to avoid duplication.
+- Problem update header now says Status: PROBLEM UPDATE and keeps Age.
+- Renamed Event time rows to Problem started.
+- Renamed Update time to Last update in update notifications.
+- Kept four Item/Value rows using the last accepted v23 native-template behavior.
+
+v24:
+- Attempted visible-text blanking for unknown Item/Value rows.
+- Reverted later because real Zabbix messages still showed unwanted output.
+
+v25:
+- Attempted light-gray None markers and macro syntax changes for unknown Item/Value rows.
+- Reverted because real Zabbix messages rendered worse than v23.
+
+v26:
+- Rolled active template code back to the last good v23 behavior.
+- Added a version/purpose HTML comment near the top of every message template.
+- Cleaned and ordered this version-history block.
+- Added the future Python script media type TODO notes above.
+
+Paste each Message body into the matching message template in:
+Alerts -> Media types -> Email -> Message templates
+Make sure Email media type uses Message format: HTML.
+
+
+================================================================================
+
+Message type: Problem
+Subject: PROBLEM: {TRIGGER.NAME} on {HOST.NAME1} [{TRIGGER.SEVERITY}]
+Message:
+<!DOCTYPE html>
+<html>
+<!-- Template version: v26; Purpose: Problem notification -->
+<head>
+<meta http-equiv="Content-type" content="text/html; charset=utf-8">
+<style type="text/css">
+  body { margin:0; padding:0; background-color:#f4f7fb; font-family:Arial, Helvetica, sans-serif; color:#2f3a4a; }
+  table { border-collapse:collapse; }
+  a { color:#1d4ed8; text-decoration:none; }
+
+  .outer { padding:10px; }
+  .wrap { width:520px; min-width:520px; max-width:676px; background:#ffffff; border:1px solid #dce6f2; }
+
+  .top-title { font-size:17px; font-weight:bold; color:#1f2d3d; }
+  .top-status { font-size:14px; font-weight:bold; color:#1f2d3d; text-align:right; white-space:nowrap; }
+  .resolved-title { color:#244b31 !important; }
+
+  .body-pad { padding:7px 8px 0 8px; }
+  .issue-title { font-size:16px; font-weight:bold; color:#374151; line-height:1.12; margin-bottom:2px; }
+  .issue-title-ok { font-size:16px; font-weight:bold; color:#276749; line-height:1.12; margin-bottom:2px; }
+  .resolvedTitle { font-size:16px; font-weight:bold; color:#276749 !important; line-height:1.12; margin-bottom:2px; }
+  .issue-meta { font-size:12px; color:#4f6072; line-height:1.12; }
+
+  .details { width:100%; border:1px solid #d9e2ec; margin-top:5px; table-layout:fixed; }
+  .details td { padding:2px 6px; border:1px solid #d9e2ec; vertical-align:middle; font-size:12.5px; line-height:1.05; word-break:normal; word-wrap:break-word; overflow-wrap:break-word; }
+  .label { width:116px; color:#5a6777; background:#f8fafc; white-space:nowrap; }
+  .host-value { font-size:18px; font-weight:bold; color:#1f2d3d; line-height:1.0; }
+  .big-value { font-size:18px; font-weight:bold; color:#1f2d3d; line-height:1.0; }
+  .muted { color:#6c7a89; font-size:12px; font-weight:normal; }
+
+  .section-title { margin-top:6px; margin-bottom:3px; font-size:13px; font-weight:bold; color:#334155; }
+  .item-box { width:100%; max-width:100%; border:1px solid #d9e2ec; table-layout:fixed; }
+  .item-box th { padding:3px 6px; border-bottom:1px solid #d9e2ec; background:#f8fafc; color:#5a6777; font-size:12px; line-height:1.1; text-align:left; font-weight:bold; word-break:normal; word-wrap:break-word; overflow-wrap:break-word; }
+  .item-box td { padding:3px 6px; border-bottom:1px solid #e6edf4; vertical-align:top; font-size:12px; line-height:1.12; word-break:normal; word-wrap:break-word; overflow-wrap:break-word; }
+  .item-box tr:last-child td { border-bottom:none; }
+  .item-name { color:#1f2d3d; font-size:12px; font-weight:normal; }
+  .item-meta { color:#7d8996; font-size:11px; font-weight:normal; }
+  .item-value { color:#1f2d3d; font-size:12px; font-weight:bold; white-space:normal; word-break:normal; word-wrap:break-word; overflow-wrap:break-word; }
+
+  .links { margin-top:6px; text-align:right; }
+  .actionTable { border-collapse:collapse !important; mso-table-lspace:0pt; mso-table-rspace:0pt; }
+  .actionWrapDisaster { border:1px solid #db7d88; padding:0; background:#fbe4e6; }
+  .actionWrapHigh { border:1px solid #d89ab8; padding:0; background:#fbe8f3; }
+  .actionWrapAverage { border:1px solid #efb27b; padding:0; background:#fff0e2; }
+  .actionWrapWarning { border:1px solid #dfc55f; padding:0; background:#fff8d9; }
+  .actionWrapInformation { border:1px solid #cbd5e1; padding:0; background:#f1f5f9; }
+  .actionWrapInformational { border:1px solid #cbd5e1; padding:0; background:#f1f5f9; }
+  .actionWrapNot { border:1px solid #cbd5e1; padding:0; background:#f1f5f9; }
+  .actionWrapOk { border:1px solid #79b68b; padding:0; background:#eef8f1; }
+  .actionTdDisaster { padding:4px 8px; border-left:1px solid #db7d88; background:#fbe4e6; line-height:1.1; font-size:13px; font-weight:bold; white-space:nowrap; }
+  .actionTdHigh { padding:4px 8px; border-left:1px solid #d89ab8; background:#fbe8f3; line-height:1.1; font-size:13px; font-weight:bold; white-space:nowrap; }
+  .actionTdAverage { padding:4px 8px; border-left:1px solid #efb27b; background:#fff0e2; line-height:1.1; font-size:13px; font-weight:bold; white-space:nowrap; }
+  .actionTdWarning { padding:4px 8px; border-left:1px solid #dfc55f; background:#fff8d9; line-height:1.1; font-size:13px; font-weight:bold; white-space:nowrap; }
+  .actionTdInformation { padding:4px 8px; border-left:1px solid #cbd5e1; background:#f1f5f9; line-height:1.1; font-size:13px; font-weight:bold; white-space:nowrap; }
+  .actionTdInformational { padding:4px 8px; border-left:1px solid #cbd5e1; background:#f1f5f9; line-height:1.1; font-size:13px; font-weight:bold; white-space:nowrap; }
+  .actionTdNot { padding:4px 8px; border-left:1px solid #cbd5e1; background:#f1f5f9; line-height:1.1; font-size:13px; font-weight:bold; white-space:nowrap; }
+  .actionTdOk { padding:4px 8px; border-left:1px solid #79b68b; background:#eef8f1; line-height:1.1; font-size:13px; font-weight:bold; white-space:nowrap; }
+  .actionLinkDisaster { color:#7f1d1d !important; text-decoration:none; font-weight:bold; }
+  .actionLinkHigh { color:#7a294f !important; text-decoration:none; font-weight:bold; }
+  .actionLinkAverage { color:#7c3f0f !important; text-decoration:none; font-weight:bold; }
+  .actionLinkWarning { color:#6b5b10 !important; text-decoration:none; font-weight:bold; }
+  .actionLinkInformation { color:#334155 !important; text-decoration:none; font-weight:bold; }
+  .actionLinkInformational { color:#334155 !important; text-decoration:none; font-weight:bold; }
+  .actionLinkNot { color:#334155 !important; text-decoration:none; font-weight:bold; }
+  .actionLinkOk { color:#276749 !important; text-decoration:none; font-weight:bold; }
+
+  .footer { background:#f8fafc; border-top:1px solid #e5eaf0; color:#6b7280; font-size:11px; padding:6px 8px; }
+
+  /*
+    v4 severity fix:
+    Outlook may ignore later classes when an element has multiple class names.
+    These templates therefore use exactly ONE severity class on colored elements:
+      sevBlock{TRIGGER.SEVERITY} and sevBadge{TRIGGER.SEVERITY}
+    Example after macro expansion:
+      class="sevBlockDisaster"
+      class="sevBadgeDisaster"
+  */
+
+  /* Disaster = soft red */
+  .sevBlockDisaster { background-color:#fbe4e6 !important; border-left-color:#db7d88 !important; }
+  .sevBadgeDisaster { background-color:#f7cfd4 !important; border-color:#e5a7af !important; color:#8f1f2c !important; }
+
+  /* High = soft pink */
+  .sevBlockHigh { background-color:#fbe8f3 !important; border-left-color:#d89ab8 !important; }
+  .sevBadgeHigh { background-color:#f7d8e7 !important; border-color:#e4b6cd !important; color:#8a3462 !important; }
+
+  /* Average = soft orange */
+  .sevBlockAverage { background-color:#fff0e2 !important; border-left-color:#efb27b !important; }
+  .sevBadgeAverage { background-color:#ffe0c2 !important; border-color:#edbe8d !important; color:#91541a !important; }
+
+  /* Warning = soft yellow */
+  .sevBlockWarning { background-color:#fff8d9 !important; border-left-color:#dfc55f !important; }
+  .sevBadgeWarning { background-color:#fff0b8 !important; border-color:#e7d484 !important; color:#7a6712 !important; }
+
+  /* Information / Informational / Not classified / fallback = soft blue */
+  .sevBlockInformation { background-color:#eaf4ff !important; border-left-color:#8fbce8 !important; }
+  .sevBlockInformational { background-color:#eaf4ff !important; border-left-color:#8fbce8 !important; }
+  .sevBlockNot { background-color:#eaf4ff !important; border-left-color:#8fbce8 !important; }
+  .sevBadgeInformation { background-color:#dcebff !important; border-color:#b7d3f3 !important; color:#24527a !important; }
+  .sevBadgeInformational { background-color:#dcebff !important; border-color:#b7d3f3 !important; color:#24527a !important; }
+  .sevBadgeNot { background-color:#dcebff !important; border-color:#b7d3f3 !important; color:#24527a !important; }
+
+  /* Severity-matched title/icon/action text colors */
+  .sevTitleDisaster { font-size:16px; font-weight:bold; color:#7f1d1d !important; line-height:1.12; margin-bottom:2px; }
+  .sevTitleHigh { font-size:16px; font-weight:bold; color:#7a294f !important; line-height:1.12; margin-bottom:2px; }
+  .sevTitleAverage { font-size:16px; font-weight:bold; color:#7c3f0f !important; line-height:1.12; margin-bottom:2px; }
+  .sevTitleWarning { font-size:16px; font-weight:bold; color:#6b5b10 !important; line-height:1.12; margin-bottom:2px; }
+  .sevTitleInformation { font-size:16px; font-weight:bold; color:#334155 !important; line-height:1.12; margin-bottom:2px; }
+  .sevTitleInformational { font-size:16px; font-weight:bold; color:#334155 !important; line-height:1.12; margin-bottom:2px; }
+  .sevTitleNot { font-size:16px; font-weight:bold; color:#334155 !important; line-height:1.12; margin-bottom:2px; }
+  .sevIconDisaster { color:#7f1d1d !important; }
+  .sevIconHigh { color:#7a294f !important; }
+  .sevIconAverage { color:#7c3f0f !important; }
+  .sevIconWarning { color:#6b5b10 !important; }
+  .sevIconInformation { color:#334155 !important; }
+  .sevIconInformational { color:#334155 !important; }
+  .sevIconNot { color:#334155 !important; }
+  .okIcon { color:#244b31 !important; }
+
+  /* Recovery-specific green */
+  .resolved-bg { background-color:#e7f5ea !important; border-left-color:#79b68b !important; }
+  .resolved-box { background-color:#eef8f1 !important; border-left-color:#79b68b !important; }
+  .ok-badge { background-color:#dff2e4 !important; border-color:#b9d9c1 !important; color:#2f6b42 !important; }
+
+  /* Static helper colors for non-trigger templates */
+  .blue-bg { background-color:#eaf4ff !important; border-left-color:#8fbce8 !important; }
+  .green-bg { background-color:#e7f5ea !important; border-left-color:#79b68b !important; }
+  .red-bg { background-color:#fbe4e6 !important; border-left-color:#db7d88 !important; }
+  .amber-bg { background-color:#fff8d9 !important; border-left-color:#dfc55f !important; }
+</style>
+</head>
+<body>
+<table width="100%" cellpadding="0" cellspacing="0" border="0">
+<tr><td align="center" class="outer">
+<table class="wrap" cellpadding="0" cellspacing="0" border="0" style="width:520px; min-width:520px; max-width:676px;">
+<tr>
+  <td class="body-pad">
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" class="sevBlock{TRIGGER.SEVERITY}" style="width:100%; border-left-width:5px; border-left-style:solid;">
+      <tr>
+        <td style="padding:6px 10px;">
+          <div class="sevTitle{TRIGGER.SEVERITY}">{TRIGGER.NAME}</div>
+          <div class="issue-meta">
+          Status: <strong>{TRIGGER.STATUS}</strong>
+          </div>
+        </td>
+        <td style="padding:6px 12px 6px 8px; width:42px; text-align:right; vertical-align:middle; font-size:26px; font-weight:bold; line-height:1; font-family:'Segoe UI Emoji','Apple Color Emoji','Noto Color Emoji',Arial,sans-serif;">⚠</td>
+      </tr>
+    </table>
+
+    <table class="details" cellpadding="0" cellspacing="0" border="0">
+      <tr>
+        <td class="label">Host</td>
+        <td><span class="host-value">{HOST.NAME1}</span> <span class="muted">({IPADDRESS1})</span></td>
+      </tr>
+      <tr>
+        <td class="label">Trigger</td>
+        <td>{TRIGGER.NAME}</td>
+      </tr>
+      <tr>
+        <td class="label">Severity</td>
+        <td><span class="sevBadge{TRIGGER.SEVERITY}" style="display:inline-block; padding:1px 6px; border-width:1px; border-style:solid; font-size:12px; font-weight:bold; line-height:1.1; white-space:nowrap;">{TRIGGER.SEVERITY}</span></td>
+      </tr>
+      <tr>
+        <td class="label">Problem started</td>
+        <td>{EVENT.DATE} {EVENT.TIME}</td>
+      </tr>
+    </table>
+
+    <table class="item-box" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%; max-width:100%; table-layout:fixed;">
+  <tr>
+    <th width="85%">Item</th>
+    <th width="15%">Value</th>
+  </tr>
+  <tr>
+    <td width="85%"><span style='{{ITEM.VALUE1}.regsub("^[*]UNKNOWN[*]$", "display:none; mso-hide:all;")}'><span class="item-name">{HOST.NAME1} ({IPADDRESS1}), {ITEM.NAME1}</span><br><span class="item-meta">{HOST.NAME1}:{ITEM.KEY1}</span></span></td>
+    <td width="15%" class="item-value"><span style='{{ITEM.VALUE1}.regsub("^[*]UNKNOWN[*]$", "display:none; mso-hide:all;")}'>{ITEM.VALUE1}</span></td>
+  </tr>
+  <tr>
+    <td width="85%"><span style='{{ITEM.VALUE2}.regsub("^[*]UNKNOWN[*]$", "display:none; mso-hide:all;")}'><span class="item-name">{HOST.NAME2} ({IPADDRESS2}), {ITEM.NAME2}</span><br><span class="item-meta">{HOST.NAME2}:{ITEM.KEY2}</span></span></td>
+    <td width="15%" class="item-value"><span style='{{ITEM.VALUE2}.regsub("^[*]UNKNOWN[*]$", "display:none; mso-hide:all;")}'>{ITEM.VALUE2}</span></td>
+  </tr>
+  <tr>
+    <td width="85%"><span style='{{ITEM.VALUE3}.regsub("^[*]UNKNOWN[*]$", "display:none; mso-hide:all;")}'><span class="item-name">{HOST.NAME3} ({IPADDRESS3}), {ITEM.NAME3}</span><br><span class="item-meta">{HOST.NAME3}:{ITEM.KEY3}</span></span></td>
+    <td width="15%" class="item-value"><span style='{{ITEM.VALUE3}.regsub("^[*]UNKNOWN[*]$", "display:none; mso-hide:all;")}'>{ITEM.VALUE3}</span></td>
+  </tr>
+  <tr>
+    <td width="85%"><span style='{{ITEM.VALUE4}.regsub("^[*]UNKNOWN[*]$", "display:none; mso-hide:all;")}'><span class="item-name">{HOST.NAME4} ({IPADDRESS4}), {ITEM.NAME4}</span><br><span class="item-meta">{HOST.NAME4}:{ITEM.KEY4}</span></span></td>
+    <td width="15%" class="item-value"><span style='{{ITEM.VALUE4}.regsub("^[*]UNKNOWN[*]$", "display:none; mso-hide:all;")}'>{ITEM.VALUE4}</span></td>
+  </tr>
+</table>
+
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:6px;">
+  <tr>
+    <td align="right" style="text-align:right;">
+      <table cellpadding="0" cellspacing="0" border="0" align="right" class="actionTable" style="border-collapse:collapse; mso-table-lspace:0pt; mso-table-rspace:0pt;">
+        <tr>
+          <td class="actionWrap{TRIGGER.SEVERITY}" style="padding:0;">
+            <table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse; mso-table-lspace:0pt; mso-table-rspace:0pt;">
+              <tr>
+          <td class="actionTd{TRIGGER.SEVERITY}" style="border-left:0;"><a class="actionLink{TRIGGER.SEVERITY}" href="https://zabbix01.example.local/chart.php?from=now-1h&amp;to=now&amp;itemids%5B0%5D={ITEM.ID1}&amp;type=0&amp;profileIdx=web.item.graph.filter&amp;profileIdx2={ITEM.ID1}&amp;width=800&amp;height=200">&#x1F5BC;&#xFE0F;</a></td>
+          <td class="actionTd{TRIGGER.SEVERITY}"><a class="actionLink{TRIGGER.SEVERITY}" href="https://zabbix01.example.local/history.php?action=showgraph&amp;itemids%5B%5D={ITEM.ID1}">Graph</a></td>
+          <td class="actionTd{TRIGGER.SEVERITY}"><a class="actionLink{TRIGGER.SEVERITY}" href="https://zabbix01.example.local/zabbix.php?action=popup&amp;popup=item.edit&amp;context=host&amp;itemid={ITEM.ID1}">Item</a></td>
+          <td class="actionTd{TRIGGER.SEVERITY}"><a class="actionLink{TRIGGER.SEVERITY}" href="https://zabbix01.example.local/zabbix.php?action=popup&amp;popup=trigger.edit&amp;triggerid={TRIGGER.ID}&amp;hostid={HOST.ID}&amp;context=host">Trigger</a></td>
+          <td class="actionTd{TRIGGER.SEVERITY}"><a class="actionLink{TRIGGER.SEVERITY}" href="https://zabbix01.example.local/tr_events.php?triggerid={TRIGGER.ID}&amp;eventid={EVENT.ID}">Event</a></td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+    <div style="height:8px;"></div>
+  </td>
+</tr>
+<tr>
+  <td class="footer" style="padding:0;">
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse; background:#f8fafc; table-layout:fixed;">
+      <tr>
+        <td width="32%" style="padding:6px 8px; color:#6b7280; font-size:11px; text-align:left; white-space:nowrap;"><a href="https://zabbix01.example.local/" style="color:#6b7280 !important; text-decoration:none; font-weight:normal;">zabbix01.example.local</a></td>
+        <td width="2%" style="padding:6px 0; color:#cbd5e1; font-size:8px; line-height:1; text-align:center; vertical-align:middle;">&#183;</td>
+        <td width="32%" style="padding:6px 8px; color:#6b7280; font-size:11px; text-align:center; white-space:nowrap;">Severity {TRIGGER.SEVERITY}</td>
+        <td width="2%" style="padding:6px 0; color:#cbd5e1; font-size:8px; line-height:1; text-align:center; vertical-align:middle;">&#183;</td>
+        <td width="32%" style="padding:6px 8px; color:#6b7280; font-size:11px; text-align:right;">{{EVENT.TAGS}.regrepl("(^|, )Application:[[:space:]]*([^,]+)", "\1<a style='color:#6b7280 !important; text-decoration:none; font-weight:normal;' href='https://zabbix01.example.local/zabbix.php?action=item.list&amp;context=host&amp;filter_name=&amp;filter_key=&amp;filter_type=-1&amp;filter_value_type=-1&amp;filter_history=&amp;filter_trends=&amp;filter_delay=&amp;filter_evaltype=0&amp;filter_tags%5B0%5D%5Btag%5D=Application&amp;filter_tags%5B0%5D%5Boperator%5D=0&amp;filter_tags%5B0%5D%5Bvalue%5D=\2&amp;filter_state=-1&amp;filter_status=-1&amp;filter_with_triggers=-1&amp;filter_inherited=-1&amp;filter_discovered=-1&amp;filter_set=1&amp;sort=name&amp;sortorder=ASC'>#Application:\2</a>", "(^|, )([^:,<]+):[[:space:]]*([^,]+)", "\1<a style='color:#6b7280 !important; text-decoration:none; font-weight:normal;' href='https://zabbix01.example.local/zabbix.php?action=trigger.list&amp;context=host&amp;filter_name=&amp;filter_state=-1&amp;filter_status=-1&amp;filter_value=-1&amp;filter_evaltype=0&amp;filter_tags%5B0%5D%5Btag%5D=\2&amp;filter_tags%5B0%5D%5Boperator%5D=0&amp;filter_tags%5B0%5D%5Bvalue%5D=\3&amp;filter_inherited=-1&amp;filter_discovered=-1&amp;filter_dependent=-1&amp;filter_set=1'>#\2:\3</a>", "(^|, )([^:,<]+)(?=,|$)", "\1<a style='color:#6b7280 !important; text-decoration:none; font-weight:normal;' href='https://zabbix01.example.local/zabbix.php?action=trigger.list&amp;context=host&amp;filter_name=&amp;filter_state=-1&amp;filter_status=-1&amp;filter_value=-1&amp;filter_evaltype=0&amp;filter_tags%5B0%5D%5Btag%5D=\2&amp;filter_tags%5B0%5D%5Boperator%5D=0&amp;filter_tags%5B0%5D%5Bvalue%5D=&amp;filter_inherited=-1&amp;filter_discovered=-1&amp;filter_dependent=-1&amp;filter_set=1'>#\2</a>")}</td>
+      </tr>
+    </table>
+  </td>
+</tr>
+</table>
+</td></tr>
+</table>
+</body>
+</html>
+
+
+================================================================================
+
+Message type: Problem recovery
+Subject: RESOLVED: {TRIGGER.NAME} on {HOST.NAME1} [duration {EVENT.DURATION}]
+Message:
+<!DOCTYPE html>
+<html>
+<!-- Template version: v26; Purpose: Problem recovery notification -->
+<head>
+<meta http-equiv="Content-type" content="text/html; charset=utf-8">
+<style type="text/css">
+  body { margin:0; padding:0; background-color:#f4f7fb; font-family:Arial, Helvetica, sans-serif; color:#2f3a4a; }
+  table { border-collapse:collapse; }
+  a { color:#1d4ed8; text-decoration:none; }
+
+  .outer { padding:10px; }
+  .wrap { width:520px; min-width:520px; max-width:676px; background:#ffffff; border:1px solid #dce6f2; }
+
+  .top-title { font-size:17px; font-weight:bold; color:#1f2d3d; }
+  .top-status { font-size:14px; font-weight:bold; color:#1f2d3d; text-align:right; white-space:nowrap; }
+  .resolved-title { color:#244b31 !important; }
+
+  .body-pad { padding:7px 8px 0 8px; }
+  .issue-title { font-size:16px; font-weight:bold; color:#374151; line-height:1.12; margin-bottom:2px; }
+  .issue-title-ok { font-size:16px; font-weight:bold; color:#276749; line-height:1.12; margin-bottom:2px; }
+  .resolvedTitle { font-size:16px; font-weight:bold; color:#276749 !important; line-height:1.12; margin-bottom:2px; }
+  .issue-meta { font-size:12px; color:#4f6072; line-height:1.12; }
+
+  .details { width:100%; border:1px solid #d9e2ec; margin-top:5px; table-layout:fixed; }
+  .details td { padding:2px 6px; border:1px solid #d9e2ec; vertical-align:middle; font-size:12.5px; line-height:1.05; word-break:normal; word-wrap:break-word; overflow-wrap:break-word; }
+  .label { width:116px; color:#5a6777; background:#f8fafc; white-space:nowrap; }
+  .host-value { font-size:18px; font-weight:bold; color:#1f2d3d; line-height:1.0; }
+  .big-value { font-size:18px; font-weight:bold; color:#1f2d3d; line-height:1.0; }
+  .muted { color:#6c7a89; font-size:12px; font-weight:normal; }
+
+  .section-title { margin-top:6px; margin-bottom:3px; font-size:13px; font-weight:bold; color:#334155; }
+  .item-box { width:100%; max-width:100%; border:1px solid #d9e2ec; table-layout:fixed; }
+  .item-box th { padding:3px 6px; border-bottom:1px solid #d9e2ec; background:#f8fafc; color:#5a6777; font-size:12px; line-height:1.1; text-align:left; font-weight:bold; word-break:normal; word-wrap:break-word; overflow-wrap:break-word; }
+  .item-box td { padding:3px 6px; border-bottom:1px solid #e6edf4; vertical-align:top; font-size:12px; line-height:1.12; word-break:normal; word-wrap:break-word; overflow-wrap:break-word; }
+  .item-box tr:last-child td { border-bottom:none; }
+  .item-name { color:#1f2d3d; font-size:12px; font-weight:normal; }
+  .item-meta { color:#7d8996; font-size:11px; font-weight:normal; }
+  .item-value { color:#1f2d3d; font-size:12px; font-weight:bold; white-space:normal; word-break:normal; word-wrap:break-word; overflow-wrap:break-word; }
+
+  .links { margin-top:6px; text-align:right; }
+  .actionTable { border-collapse:collapse !important; mso-table-lspace:0pt; mso-table-rspace:0pt; }
+  .actionWrapDisaster { border:1px solid #db7d88; padding:0; background:#fbe4e6; }
+  .actionWrapHigh { border:1px solid #d89ab8; padding:0; background:#fbe8f3; }
+  .actionWrapAverage { border:1px solid #efb27b; padding:0; background:#fff0e2; }
+  .actionWrapWarning { border:1px solid #dfc55f; padding:0; background:#fff8d9; }
+  .actionWrapInformation { border:1px solid #cbd5e1; padding:0; background:#f1f5f9; }
+  .actionWrapInformational { border:1px solid #cbd5e1; padding:0; background:#f1f5f9; }
+  .actionWrapNot { border:1px solid #cbd5e1; padding:0; background:#f1f5f9; }
+  .actionWrapOk { border:1px solid #79b68b; padding:0; background:#eef8f1; }
+  .actionTdDisaster { padding:4px 8px; border-left:1px solid #db7d88; background:#fbe4e6; line-height:1.1; font-size:13px; font-weight:bold; white-space:nowrap; }
+  .actionTdHigh { padding:4px 8px; border-left:1px solid #d89ab8; background:#fbe8f3; line-height:1.1; font-size:13px; font-weight:bold; white-space:nowrap; }
+  .actionTdAverage { padding:4px 8px; border-left:1px solid #efb27b; background:#fff0e2; line-height:1.1; font-size:13px; font-weight:bold; white-space:nowrap; }
+  .actionTdWarning { padding:4px 8px; border-left:1px solid #dfc55f; background:#fff8d9; line-height:1.1; font-size:13px; font-weight:bold; white-space:nowrap; }
+  .actionTdInformation { padding:4px 8px; border-left:1px solid #cbd5e1; background:#f1f5f9; line-height:1.1; font-size:13px; font-weight:bold; white-space:nowrap; }
+  .actionTdInformational { padding:4px 8px; border-left:1px solid #cbd5e1; background:#f1f5f9; line-height:1.1; font-size:13px; font-weight:bold; white-space:nowrap; }
+  .actionTdNot { padding:4px 8px; border-left:1px solid #cbd5e1; background:#f1f5f9; line-height:1.1; font-size:13px; font-weight:bold; white-space:nowrap; }
+  .actionTdOk { padding:4px 8px; border-left:1px solid #79b68b; background:#eef8f1; line-height:1.1; font-size:13px; font-weight:bold; white-space:nowrap; }
+  .actionLinkDisaster { color:#7f1d1d !important; text-decoration:none; font-weight:bold; }
+  .actionLinkHigh { color:#7a294f !important; text-decoration:none; font-weight:bold; }
+  .actionLinkAverage { color:#7c3f0f !important; text-decoration:none; font-weight:bold; }
+  .actionLinkWarning { color:#6b5b10 !important; text-decoration:none; font-weight:bold; }
+  .actionLinkInformation { color:#334155 !important; text-decoration:none; font-weight:bold; }
+  .actionLinkInformational { color:#334155 !important; text-decoration:none; font-weight:bold; }
+  .actionLinkNot { color:#334155 !important; text-decoration:none; font-weight:bold; }
+  .actionLinkOk { color:#276749 !important; text-decoration:none; font-weight:bold; }
+
+  .footer { background:#f8fafc; border-top:1px solid #e5eaf0; color:#6b7280; font-size:11px; padding:6px 8px; }
+
+  /*
+    v4 severity fix:
+    Outlook may ignore later classes when an element has multiple class names.
+    These templates therefore use exactly ONE severity class on colored elements:
+      sevBlock{TRIGGER.SEVERITY} and sevBadge{TRIGGER.SEVERITY}
+    Example after macro expansion:
+      class="sevBlockDisaster"
+      class="sevBadgeDisaster"
+  */
+
+  /* Disaster = soft red */
+  .sevBlockDisaster { background-color:#fbe4e6 !important; border-left-color:#db7d88 !important; }
+  .sevBadgeDisaster { background-color:#f7cfd4 !important; border-color:#e5a7af !important; color:#8f1f2c !important; }
+
+  /* High = soft pink */
+  .sevBlockHigh { background-color:#fbe8f3 !important; border-left-color:#d89ab8 !important; }
+  .sevBadgeHigh { background-color:#f7d8e7 !important; border-color:#e4b6cd !important; color:#8a3462 !important; }
+
+  /* Average = soft orange */
+  .sevBlockAverage { background-color:#fff0e2 !important; border-left-color:#efb27b !important; }
+  .sevBadgeAverage { background-color:#ffe0c2 !important; border-color:#edbe8d !important; color:#91541a !important; }
+
+  /* Warning = soft yellow */
+  .sevBlockWarning { background-color:#fff8d9 !important; border-left-color:#dfc55f !important; }
+  .sevBadgeWarning { background-color:#fff0b8 !important; border-color:#e7d484 !important; color:#7a6712 !important; }
+
+  /* Information / Informational / Not classified / fallback = soft blue */
+  .sevBlockInformation { background-color:#eaf4ff !important; border-left-color:#8fbce8 !important; }
+  .sevBlockInformational { background-color:#eaf4ff !important; border-left-color:#8fbce8 !important; }
+  .sevBlockNot { background-color:#eaf4ff !important; border-left-color:#8fbce8 !important; }
+  .sevBadgeInformation { background-color:#dcebff !important; border-color:#b7d3f3 !important; color:#24527a !important; }
+  .sevBadgeInformational { background-color:#dcebff !important; border-color:#b7d3f3 !important; color:#24527a !important; }
+  .sevBadgeNot { background-color:#dcebff !important; border-color:#b7d3f3 !important; color:#24527a !important; }
+
+  /* Severity-matched title/icon/action text colors */
+  .sevTitleDisaster { font-size:16px; font-weight:bold; color:#7f1d1d !important; line-height:1.12; margin-bottom:2px; }
+  .sevTitleHigh { font-size:16px; font-weight:bold; color:#7a294f !important; line-height:1.12; margin-bottom:2px; }
+  .sevTitleAverage { font-size:16px; font-weight:bold; color:#7c3f0f !important; line-height:1.12; margin-bottom:2px; }
+  .sevTitleWarning { font-size:16px; font-weight:bold; color:#6b5b10 !important; line-height:1.12; margin-bottom:2px; }
+  .sevTitleInformation { font-size:16px; font-weight:bold; color:#334155 !important; line-height:1.12; margin-bottom:2px; }
+  .sevTitleInformational { font-size:16px; font-weight:bold; color:#334155 !important; line-height:1.12; margin-bottom:2px; }
+  .sevTitleNot { font-size:16px; font-weight:bold; color:#334155 !important; line-height:1.12; margin-bottom:2px; }
+  .sevIconDisaster { color:#7f1d1d !important; }
+  .sevIconHigh { color:#7a294f !important; }
+  .sevIconAverage { color:#7c3f0f !important; }
+  .sevIconWarning { color:#6b5b10 !important; }
+  .sevIconInformation { color:#334155 !important; }
+  .sevIconInformational { color:#334155 !important; }
+  .sevIconNot { color:#334155 !important; }
+  .okIcon { color:#244b31 !important; }
+
+  /* Recovery-specific green */
+  .resolved-bg { background-color:#e7f5ea !important; border-left-color:#79b68b !important; }
+  .resolved-box { background-color:#eef8f1 !important; border-left-color:#79b68b !important; }
+  .ok-badge { background-color:#dff2e4 !important; border-color:#b9d9c1 !important; color:#2f6b42 !important; }
+
+  /* Static helper colors for non-trigger templates */
+  .blue-bg { background-color:#eaf4ff !important; border-left-color:#8fbce8 !important; }
+  .green-bg { background-color:#e7f5ea !important; border-left-color:#79b68b !important; }
+  .red-bg { background-color:#fbe4e6 !important; border-left-color:#db7d88 !important; }
+  .amber-bg { background-color:#fff8d9 !important; border-left-color:#dfc55f !important; }
+</style>
+</head>
+<body>
+<table width="100%" cellpadding="0" cellspacing="0" border="0">
+<tr><td align="center" class="outer">
+<table class="wrap" cellpadding="0" cellspacing="0" border="0" style="width:520px; min-width:520px; max-width:676px;">
+<tr>
+  <td class="body-pad">
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" class="resolved-box" style="width:100%; border-left-width:5px; border-left-style:solid;">
+      <tr>
+        <td style="padding:6px 10px;">
+          <div class="resolvedTitle">{TRIGGER.NAME}</div>
+          <div class="issue-meta">
+          Status: <strong>{TRIGGER.STATUS}</strong>
+          &nbsp;|&nbsp; Duration: <strong>{EVENT.DURATION}</strong>
+          </div>
+        </td>
+        <td class="okIcon" style="padding:6px 12px 6px 8px; width:42px; text-align:right; vertical-align:middle; font-size:26px; font-weight:bold; line-height:1; font-family:Arial, Helvetica, sans-serif;">✔</td>
+      </tr>
+    </table>
+
+    <table class="details" cellpadding="0" cellspacing="0" border="0">
+      <tr>
+        <td class="label">Host</td>
+        <td><span class="host-value">{HOST.NAME1}</span> <span class="muted">({IPADDRESS1})</span></td>
+      </tr>
+      <tr>
+        <td class="label">Trigger</td>
+        <td>{TRIGGER.NAME}</td>
+      </tr>
+      <tr>
+        <td class="label">Recovery status</td>
+        <td><span class="ok-badge" style="display:inline-block; padding:1px 6px; border-width:1px; border-style:solid; font-size:12px; font-weight:bold; line-height:1.1; white-space:nowrap;">{TRIGGER.STATUS}</span></td>
+      </tr>
+      <tr>
+        <td class="label">Previous severity</td>
+        <td><span class="sevBadge{TRIGGER.SEVERITY}" style="display:inline-block; padding:1px 6px; border-width:1px; border-style:solid; font-size:12px; font-weight:bold; line-height:1.1; white-space:nowrap;">{TRIGGER.SEVERITY}</span></td>
+      </tr>
+      <tr>
+        <td class="label">Problem started</td>
+        <td>{EVENT.DATE} {EVENT.TIME}</td>
+      </tr>
+    </table>
+
+    <table class="item-box" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%; max-width:100%; table-layout:fixed;">
+  <tr>
+    <th width="85%">Item</th>
+    <th width="15%">Value</th>
+  </tr>
+  <tr>
+    <td width="85%"><span style='{{ITEM.VALUE1}.regsub("^[*]UNKNOWN[*]$", "display:none; mso-hide:all;")}'><span class="item-name">{HOST.NAME1} ({IPADDRESS1}), {ITEM.NAME1}</span><br><span class="item-meta">{HOST.NAME1}:{ITEM.KEY1}</span></span></td>
+    <td width="15%" class="item-value"><span style='{{ITEM.VALUE1}.regsub("^[*]UNKNOWN[*]$", "display:none; mso-hide:all;")}'>{ITEM.VALUE1}</span></td>
+  </tr>
+  <tr>
+    <td width="85%"><span style='{{ITEM.VALUE2}.regsub("^[*]UNKNOWN[*]$", "display:none; mso-hide:all;")}'><span class="item-name">{HOST.NAME2} ({IPADDRESS2}), {ITEM.NAME2}</span><br><span class="item-meta">{HOST.NAME2}:{ITEM.KEY2}</span></span></td>
+    <td width="15%" class="item-value"><span style='{{ITEM.VALUE2}.regsub("^[*]UNKNOWN[*]$", "display:none; mso-hide:all;")}'>{ITEM.VALUE2}</span></td>
+  </tr>
+  <tr>
+    <td width="85%"><span style='{{ITEM.VALUE3}.regsub("^[*]UNKNOWN[*]$", "display:none; mso-hide:all;")}'><span class="item-name">{HOST.NAME3} ({IPADDRESS3}), {ITEM.NAME3}</span><br><span class="item-meta">{HOST.NAME3}:{ITEM.KEY3}</span></span></td>
+    <td width="15%" class="item-value"><span style='{{ITEM.VALUE3}.regsub("^[*]UNKNOWN[*]$", "display:none; mso-hide:all;")}'>{ITEM.VALUE3}</span></td>
+  </tr>
+  <tr>
+    <td width="85%"><span style='{{ITEM.VALUE4}.regsub("^[*]UNKNOWN[*]$", "display:none; mso-hide:all;")}'><span class="item-name">{HOST.NAME4} ({IPADDRESS4}), {ITEM.NAME4}</span><br><span class="item-meta">{HOST.NAME4}:{ITEM.KEY4}</span></span></td>
+    <td width="15%" class="item-value"><span style='{{ITEM.VALUE4}.regsub("^[*]UNKNOWN[*]$", "display:none; mso-hide:all;")}'>{ITEM.VALUE4}</span></td>
+  </tr>
+</table>
+
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:6px;">
+  <tr>
+    <td align="right" style="text-align:right;">
+      <table cellpadding="0" cellspacing="0" border="0" align="right" class="actionTable" style="border-collapse:collapse; mso-table-lspace:0pt; mso-table-rspace:0pt;">
+        <tr>
+          <td class="actionWrapOk" style="padding:0;">
+            <table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse; mso-table-lspace:0pt; mso-table-rspace:0pt;">
+              <tr>
+          <td class="actionTdOk" style="border-left:0;"><a class="actionLinkOk" href="https://zabbix01.example.local/chart.php?from=now-1h&amp;to=now&amp;itemids%5B0%5D={ITEM.ID1}&amp;type=0&amp;profileIdx=web.item.graph.filter&amp;profileIdx2={ITEM.ID1}&amp;width=800&amp;height=200">&#x1F5BC;&#xFE0F;</a></td>
+          <td class="actionTdOk"><a class="actionLinkOk" href="https://zabbix01.example.local/history.php?action=showgraph&amp;itemids%5B%5D={ITEM.ID1}">Graph</a></td>
+          <td class="actionTdOk"><a class="actionLinkOk" href="https://zabbix01.example.local/zabbix.php?action=popup&amp;popup=item.edit&amp;context=host&amp;itemid={ITEM.ID1}">Item</a></td>
+          <td class="actionTdOk"><a class="actionLinkOk" href="https://zabbix01.example.local/zabbix.php?action=popup&amp;popup=trigger.edit&amp;triggerid={TRIGGER.ID}&amp;hostid={HOST.ID}&amp;context=host">Trigger</a></td>
+          <td class="actionTdOk"><a class="actionLinkOk" href="https://zabbix01.example.local/tr_events.php?triggerid={TRIGGER.ID}&amp;eventid={EVENT.ID}">Event</a></td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+    <div style="height:8px;"></div>
+  </td>
+</tr>
+<tr>
+  <td class="footer" style="padding:0;">
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse; background:#f8fafc; table-layout:fixed;">
+      <tr>
+        <td width="32%" style="padding:6px 8px; color:#6b7280; font-size:11px; text-align:left; white-space:nowrap;"><a href="https://zabbix01.example.local/" style="color:#6b7280 !important; text-decoration:none; font-weight:normal;">zabbix01.example.local</a></td>
+        <td width="2%" style="padding:6px 0; color:#cbd5e1; font-size:8px; line-height:1; text-align:center; vertical-align:middle;">&#183;</td>
+        <td width="32%" style="padding:6px 8px; color:#6b7280; font-size:11px; text-align:center; white-space:nowrap;">Severity {TRIGGER.SEVERITY}</td>
+        <td width="2%" style="padding:6px 0; color:#cbd5e1; font-size:8px; line-height:1; text-align:center; vertical-align:middle;">&#183;</td>
+        <td width="32%" style="padding:6px 8px; color:#6b7280; font-size:11px; text-align:right;">{{EVENT.TAGS}.regrepl("(^|, )Application:[[:space:]]*([^,]+)", "\1<a style='color:#6b7280 !important; text-decoration:none; font-weight:normal;' href='https://zabbix01.example.local/zabbix.php?action=item.list&amp;context=host&amp;filter_name=&amp;filter_key=&amp;filter_type=-1&amp;filter_value_type=-1&amp;filter_history=&amp;filter_trends=&amp;filter_delay=&amp;filter_evaltype=0&amp;filter_tags%5B0%5D%5Btag%5D=Application&amp;filter_tags%5B0%5D%5Boperator%5D=0&amp;filter_tags%5B0%5D%5Bvalue%5D=\2&amp;filter_state=-1&amp;filter_status=-1&amp;filter_with_triggers=-1&amp;filter_inherited=-1&amp;filter_discovered=-1&amp;filter_set=1&amp;sort=name&amp;sortorder=ASC'>#Application:\2</a>", "(^|, )([^:,<]+):[[:space:]]*([^,]+)", "\1<a style='color:#6b7280 !important; text-decoration:none; font-weight:normal;' href='https://zabbix01.example.local/zabbix.php?action=trigger.list&amp;context=host&amp;filter_name=&amp;filter_state=-1&amp;filter_status=-1&amp;filter_value=-1&amp;filter_evaltype=0&amp;filter_tags%5B0%5D%5Btag%5D=\2&amp;filter_tags%5B0%5D%5Boperator%5D=0&amp;filter_tags%5B0%5D%5Bvalue%5D=\3&amp;filter_inherited=-1&amp;filter_discovered=-1&amp;filter_dependent=-1&amp;filter_set=1'>#\2:\3</a>", "(^|, )([^:,<]+)(?=,|$)", "\1<a style='color:#6b7280 !important; text-decoration:none; font-weight:normal;' href='https://zabbix01.example.local/zabbix.php?action=trigger.list&amp;context=host&amp;filter_name=&amp;filter_state=-1&amp;filter_status=-1&amp;filter_value=-1&amp;filter_evaltype=0&amp;filter_tags%5B0%5D%5Btag%5D=\2&amp;filter_tags%5B0%5D%5Boperator%5D=0&amp;filter_tags%5B0%5D%5Bvalue%5D=&amp;filter_inherited=-1&amp;filter_discovered=-1&amp;filter_dependent=-1&amp;filter_set=1'>#\2</a>")}</td>
+      </tr>
+    </table>
+  </td>
+</tr>
+</table>
+</td></tr>
+</table>
+</body>
+</html>
+
+
+================================================================================
+
+Message type: Problem update
+Subject: UPDATE: {TRIGGER.STATUS}: {TRIGGER.NAME} on {HOST.NAME1} [{EVENT.AGE} from detection]
+Message:
+<!DOCTYPE html>
+<html>
+<!-- Template version: v26; Purpose: Problem update notification -->
+<head>
+<meta http-equiv="Content-type" content="text/html; charset=utf-8">
+<style type="text/css">
+  body { margin:0; padding:0; background-color:#f4f7fb; font-family:Arial, Helvetica, sans-serif; color:#2f3a4a; }
+  table { border-collapse:collapse; }
+  a { color:#1d4ed8; text-decoration:none; }
+
+  .outer { padding:10px; }
+  .wrap { width:520px; min-width:520px; max-width:676px; background:#ffffff; border:1px solid #dce6f2; }
+
+  .top-title { font-size:17px; font-weight:bold; color:#1f2d3d; }
+  .top-status { font-size:14px; font-weight:bold; color:#1f2d3d; text-align:right; white-space:nowrap; }
+  .resolved-title { color:#244b31 !important; }
+
+  .body-pad { padding:7px 8px 0 8px; }
+  .issue-title { font-size:16px; font-weight:bold; color:#374151; line-height:1.12; margin-bottom:2px; }
+  .issue-title-ok { font-size:16px; font-weight:bold; color:#276749; line-height:1.12; margin-bottom:2px; }
+  .resolvedTitle { font-size:16px; font-weight:bold; color:#276749 !important; line-height:1.12; margin-bottom:2px; }
+  .issue-meta { font-size:12px; color:#4f6072; line-height:1.12; }
+
+  .details { width:100%; border:1px solid #d9e2ec; margin-top:5px; table-layout:fixed; }
+  .details td { padding:2px 6px; border:1px solid #d9e2ec; vertical-align:middle; font-size:12.5px; line-height:1.05; word-break:normal; word-wrap:break-word; overflow-wrap:break-word; }
+  .label { width:116px; color:#5a6777; background:#f8fafc; white-space:nowrap; }
+  .host-value { font-size:18px; font-weight:bold; color:#1f2d3d; line-height:1.0; }
+  .big-value { font-size:18px; font-weight:bold; color:#1f2d3d; line-height:1.0; }
+  .muted { color:#6c7a89; font-size:12px; font-weight:normal; }
+
+  .section-title { margin-top:6px; margin-bottom:3px; font-size:13px; font-weight:bold; color:#334155; }
+  .item-box { width:100%; max-width:100%; border:1px solid #d9e2ec; table-layout:fixed; }
+  .item-box th { padding:3px 6px; border-bottom:1px solid #d9e2ec; background:#f8fafc; color:#5a6777; font-size:12px; line-height:1.1; text-align:left; font-weight:bold; word-break:normal; word-wrap:break-word; overflow-wrap:break-word; }
+  .item-box td { padding:3px 6px; border-bottom:1px solid #e6edf4; vertical-align:top; font-size:12px; line-height:1.12; word-break:normal; word-wrap:break-word; overflow-wrap:break-word; }
+  .item-box tr:last-child td { border-bottom:none; }
+  .item-name { color:#1f2d3d; font-size:12px; font-weight:normal; }
+  .item-meta { color:#7d8996; font-size:11px; font-weight:normal; }
+  .item-value { color:#1f2d3d; font-size:12px; font-weight:bold; white-space:normal; word-break:normal; word-wrap:break-word; overflow-wrap:break-word; }
+
+  .links { margin-top:6px; text-align:right; }
+  .actionTable { border-collapse:collapse !important; mso-table-lspace:0pt; mso-table-rspace:0pt; }
+  .actionWrapDisaster { border:1px solid #db7d88; padding:0; background:#fbe4e6; }
+  .actionWrapHigh { border:1px solid #d89ab8; padding:0; background:#fbe8f3; }
+  .actionWrapAverage { border:1px solid #efb27b; padding:0; background:#fff0e2; }
+  .actionWrapWarning { border:1px solid #dfc55f; padding:0; background:#fff8d9; }
+  .actionWrapInformation { border:1px solid #cbd5e1; padding:0; background:#f1f5f9; }
+  .actionWrapInformational { border:1px solid #cbd5e1; padding:0; background:#f1f5f9; }
+  .actionWrapNot { border:1px solid #cbd5e1; padding:0; background:#f1f5f9; }
+  .actionWrapOk { border:1px solid #79b68b; padding:0; background:#eef8f1; }
+  .actionTdDisaster { padding:4px 8px; border-left:1px solid #db7d88; background:#fbe4e6; line-height:1.1; font-size:13px; font-weight:bold; white-space:nowrap; }
+  .actionTdHigh { padding:4px 8px; border-left:1px solid #d89ab8; background:#fbe8f3; line-height:1.1; font-size:13px; font-weight:bold; white-space:nowrap; }
+  .actionTdAverage { padding:4px 8px; border-left:1px solid #efb27b; background:#fff0e2; line-height:1.1; font-size:13px; font-weight:bold; white-space:nowrap; }
+  .actionTdWarning { padding:4px 8px; border-left:1px solid #dfc55f; background:#fff8d9; line-height:1.1; font-size:13px; font-weight:bold; white-space:nowrap; }
+  .actionTdInformation { padding:4px 8px; border-left:1px solid #cbd5e1; background:#f1f5f9; line-height:1.1; font-size:13px; font-weight:bold; white-space:nowrap; }
+  .actionTdInformational { padding:4px 8px; border-left:1px solid #cbd5e1; background:#f1f5f9; line-height:1.1; font-size:13px; font-weight:bold; white-space:nowrap; }
+  .actionTdNot { padding:4px 8px; border-left:1px solid #cbd5e1; background:#f1f5f9; line-height:1.1; font-size:13px; font-weight:bold; white-space:nowrap; }
+  .actionTdOk { padding:4px 8px; border-left:1px solid #79b68b; background:#eef8f1; line-height:1.1; font-size:13px; font-weight:bold; white-space:nowrap; }
+  .actionLinkDisaster { color:#7f1d1d !important; text-decoration:none; font-weight:bold; }
+  .actionLinkHigh { color:#7a294f !important; text-decoration:none; font-weight:bold; }
+  .actionLinkAverage { color:#7c3f0f !important; text-decoration:none; font-weight:bold; }
+  .actionLinkWarning { color:#6b5b10 !important; text-decoration:none; font-weight:bold; }
+  .actionLinkInformation { color:#334155 !important; text-decoration:none; font-weight:bold; }
+  .actionLinkInformational { color:#334155 !important; text-decoration:none; font-weight:bold; }
+  .actionLinkNot { color:#334155 !important; text-decoration:none; font-weight:bold; }
+  .actionLinkOk { color:#276749 !important; text-decoration:none; font-weight:bold; }
+
+  .footer { background:#f8fafc; border-top:1px solid #e5eaf0; color:#6b7280; font-size:11px; padding:6px 8px; }
+
+  /*
+    v4 severity fix:
+    Outlook may ignore later classes when an element has multiple class names.
+    These templates therefore use exactly ONE severity class on colored elements:
+      sevBlock{TRIGGER.SEVERITY} and sevBadge{TRIGGER.SEVERITY}
+    Example after macro expansion:
+      class="sevBlockDisaster"
+      class="sevBadgeDisaster"
+  */
+
+  /* Disaster = soft red */
+  .sevBlockDisaster { background-color:#fbe4e6 !important; border-left-color:#db7d88 !important; }
+  .sevBadgeDisaster { background-color:#f7cfd4 !important; border-color:#e5a7af !important; color:#8f1f2c !important; }
+
+  /* High = soft pink */
+  .sevBlockHigh { background-color:#fbe8f3 !important; border-left-color:#d89ab8 !important; }
+  .sevBadgeHigh { background-color:#f7d8e7 !important; border-color:#e4b6cd !important; color:#8a3462 !important; }
+
+  /* Average = soft orange */
+  .sevBlockAverage { background-color:#fff0e2 !important; border-left-color:#efb27b !important; }
+  .sevBadgeAverage { background-color:#ffe0c2 !important; border-color:#edbe8d !important; color:#91541a !important; }
+
+  /* Warning = soft yellow */
+  .sevBlockWarning { background-color:#fff8d9 !important; border-left-color:#dfc55f !important; }
+  .sevBadgeWarning { background-color:#fff0b8 !important; border-color:#e7d484 !important; color:#7a6712 !important; }
+
+  /* Information / Informational / Not classified / fallback = soft blue */
+  .sevBlockInformation { background-color:#eaf4ff !important; border-left-color:#8fbce8 !important; }
+  .sevBlockInformational { background-color:#eaf4ff !important; border-left-color:#8fbce8 !important; }
+  .sevBlockNot { background-color:#eaf4ff !important; border-left-color:#8fbce8 !important; }
+  .sevBadgeInformation { background-color:#dcebff !important; border-color:#b7d3f3 !important; color:#24527a !important; }
+  .sevBadgeInformational { background-color:#dcebff !important; border-color:#b7d3f3 !important; color:#24527a !important; }
+  .sevBadgeNot { background-color:#dcebff !important; border-color:#b7d3f3 !important; color:#24527a !important; }
+
+  /* Severity-matched title/icon/action text colors */
+  .sevTitleDisaster { font-size:16px; font-weight:bold; color:#7f1d1d !important; line-height:1.12; margin-bottom:2px; }
+  .sevTitleHigh { font-size:16px; font-weight:bold; color:#7a294f !important; line-height:1.12; margin-bottom:2px; }
+  .sevTitleAverage { font-size:16px; font-weight:bold; color:#7c3f0f !important; line-height:1.12; margin-bottom:2px; }
+  .sevTitleWarning { font-size:16px; font-weight:bold; color:#6b5b10 !important; line-height:1.12; margin-bottom:2px; }
+  .sevTitleInformation { font-size:16px; font-weight:bold; color:#334155 !important; line-height:1.12; margin-bottom:2px; }
+  .sevTitleInformational { font-size:16px; font-weight:bold; color:#334155 !important; line-height:1.12; margin-bottom:2px; }
+  .sevTitleNot { font-size:16px; font-weight:bold; color:#334155 !important; line-height:1.12; margin-bottom:2px; }
+  .sevIconDisaster { color:#7f1d1d !important; }
+  .sevIconHigh { color:#7a294f !important; }
+  .sevIconAverage { color:#7c3f0f !important; }
+  .sevIconWarning { color:#6b5b10 !important; }
+  .sevIconInformation { color:#334155 !important; }
+  .sevIconInformational { color:#334155 !important; }
+  .sevIconNot { color:#334155 !important; }
+  .okIcon { color:#244b31 !important; }
+
+  /* Recovery-specific green */
+  .resolved-bg { background-color:#e7f5ea !important; border-left-color:#79b68b !important; }
+  .resolved-box { background-color:#eef8f1 !important; border-left-color:#79b68b !important; }
+  .ok-badge { background-color:#dff2e4 !important; border-color:#b9d9c1 !important; color:#2f6b42 !important; }
+
+  /* Static helper colors for non-trigger templates */
+  .blue-bg { background-color:#eaf4ff !important; border-left-color:#8fbce8 !important; }
+  .green-bg { background-color:#e7f5ea !important; border-left-color:#79b68b !important; }
+  .red-bg { background-color:#fbe4e6 !important; border-left-color:#db7d88 !important; }
+  .amber-bg { background-color:#fff8d9 !important; border-left-color:#dfc55f !important; }
+</style>
+</head>
+<body>
+<table width="100%" cellpadding="0" cellspacing="0" border="0">
+<tr><td align="center" class="outer">
+<table class="wrap" cellpadding="0" cellspacing="0" border="0" style="width:520px; min-width:520px; max-width:676px;">
+<tr>
+  <td class="body-pad">
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" class="sevBlock{TRIGGER.SEVERITY}" style="width:100%; border-left-width:5px; border-left-style:solid;">
+      <tr>
+        <td style="padding:6px 10px;">
+          <div class="sevTitle{TRIGGER.SEVERITY}">{TRIGGER.NAME}</div>
+          <div class="issue-meta">
+          Status: <strong>PROBLEM UPDATE</strong>
+          &nbsp;|&nbsp; Age: <strong>{EVENT.AGE}</strong>
+          </div>
+        </td>
+        <td style="padding:6px 12px 6px 8px; width:42px; text-align:right; vertical-align:middle; font-size:26px; font-weight:bold; line-height:1; font-family:'Segoe UI Emoji','Apple Color Emoji','Noto Color Emoji',Arial,sans-serif;">⚠</td>
+      </tr>
+    </table>
+
+    <table class="details" cellpadding="0" cellspacing="0" border="0">
+      <tr>
+        <td class="label">Host</td>
+        <td><span class="host-value">{HOST.NAME1}</span> <span class="muted">({IPADDRESS1})</span></td>
+      </tr>
+      <tr>
+        <td class="label">Trigger</td>
+        <td>{TRIGGER.NAME}</td>
+      </tr>
+      <tr>
+        <td class="label">Severity</td>
+        <td><span class="sevBadge{TRIGGER.SEVERITY}" style="display:inline-block; padding:1px 6px; border-width:1px; border-style:solid; font-size:12px; font-weight:bold; line-height:1.1; white-space:nowrap;">{TRIGGER.SEVERITY}</span></td>
+      </tr>
+      <tr>
+        <td class="label">Update</td>
+        <td>
+          <strong>User:</strong> {USER.FULLNAME}<br>
+          <strong>Action:</strong> {EVENT.UPDATE.ACTION}<br>
+          <strong>Message:</strong> {EVENT.UPDATE.MESSAGE}<br>
+          <strong>Current status:</strong> {EVENT.STATUS}<br>
+          <strong>Acknowledged:</strong> {EVENT.ACK.STATUS}<br>
+          <strong>Last update:</strong> {EVENT.UPDATE.DATE} {EVENT.UPDATE.TIME}
+        </td>
+      </tr>
+      <tr>
+        <td class="label">Problem started</td>
+        <td>{EVENT.DATE} {EVENT.TIME}</td>
+      </tr>
+    </table>
+
+    <table class="item-box" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%; max-width:100%; table-layout:fixed;">
+  <tr>
+    <th width="85%">Item</th>
+    <th width="15%">Value</th>
+  </tr>
+  <tr>
+    <td width="85%"><span style='{{ITEM.VALUE1}.regsub("^[*]UNKNOWN[*]$", "display:none; mso-hide:all;")}'><span class="item-name">{HOST.NAME1} ({IPADDRESS1}), {ITEM.NAME1}</span><br><span class="item-meta">{HOST.NAME1}:{ITEM.KEY1}</span></span></td>
+    <td width="15%" class="item-value"><span style='{{ITEM.VALUE1}.regsub("^[*]UNKNOWN[*]$", "display:none; mso-hide:all;")}'>{ITEM.VALUE1}</span></td>
+  </tr>
+  <tr>
+    <td width="85%"><span style='{{ITEM.VALUE2}.regsub("^[*]UNKNOWN[*]$", "display:none; mso-hide:all;")}'><span class="item-name">{HOST.NAME2} ({IPADDRESS2}), {ITEM.NAME2}</span><br><span class="item-meta">{HOST.NAME2}:{ITEM.KEY2}</span></span></td>
+    <td width="15%" class="item-value"><span style='{{ITEM.VALUE2}.regsub("^[*]UNKNOWN[*]$", "display:none; mso-hide:all;")}'>{ITEM.VALUE2}</span></td>
+  </tr>
+  <tr>
+    <td width="85%"><span style='{{ITEM.VALUE3}.regsub("^[*]UNKNOWN[*]$", "display:none; mso-hide:all;")}'><span class="item-name">{HOST.NAME3} ({IPADDRESS3}), {ITEM.NAME3}</span><br><span class="item-meta">{HOST.NAME3}:{ITEM.KEY3}</span></span></td>
+    <td width="15%" class="item-value"><span style='{{ITEM.VALUE3}.regsub("^[*]UNKNOWN[*]$", "display:none; mso-hide:all;")}'>{ITEM.VALUE3}</span></td>
+  </tr>
+  <tr>
+    <td width="85%"><span style='{{ITEM.VALUE4}.regsub("^[*]UNKNOWN[*]$", "display:none; mso-hide:all;")}'><span class="item-name">{HOST.NAME4} ({IPADDRESS4}), {ITEM.NAME4}</span><br><span class="item-meta">{HOST.NAME4}:{ITEM.KEY4}</span></span></td>
+    <td width="15%" class="item-value"><span style='{{ITEM.VALUE4}.regsub("^[*]UNKNOWN[*]$", "display:none; mso-hide:all;")}'>{ITEM.VALUE4}</span></td>
+  </tr>
+</table>
+
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:6px;">
+  <tr>
+    <td align="right" style="text-align:right;">
+      <table cellpadding="0" cellspacing="0" border="0" align="right" class="actionTable" style="border-collapse:collapse; mso-table-lspace:0pt; mso-table-rspace:0pt;">
+        <tr>
+          <td class="actionWrap{TRIGGER.SEVERITY}" style="padding:0;">
+            <table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse; mso-table-lspace:0pt; mso-table-rspace:0pt;">
+              <tr>
+          <td class="actionTd{TRIGGER.SEVERITY}" style="border-left:0;"><a class="actionLink{TRIGGER.SEVERITY}" href="https://zabbix01.example.local/chart.php?from=now-1h&amp;to=now&amp;itemids%5B0%5D={ITEM.ID1}&amp;type=0&amp;profileIdx=web.item.graph.filter&amp;profileIdx2={ITEM.ID1}&amp;width=800&amp;height=200">&#x1F5BC;&#xFE0F;</a></td>
+          <td class="actionTd{TRIGGER.SEVERITY}"><a class="actionLink{TRIGGER.SEVERITY}" href="https://zabbix01.example.local/history.php?action=showgraph&amp;itemids%5B%5D={ITEM.ID1}">Graph</a></td>
+          <td class="actionTd{TRIGGER.SEVERITY}"><a class="actionLink{TRIGGER.SEVERITY}" href="https://zabbix01.example.local/zabbix.php?action=popup&amp;popup=item.edit&amp;context=host&amp;itemid={ITEM.ID1}">Item</a></td>
+          <td class="actionTd{TRIGGER.SEVERITY}"><a class="actionLink{TRIGGER.SEVERITY}" href="https://zabbix01.example.local/zabbix.php?action=popup&amp;popup=trigger.edit&amp;triggerid={TRIGGER.ID}&amp;hostid={HOST.ID}&amp;context=host">Trigger</a></td>
+          <td class="actionTd{TRIGGER.SEVERITY}"><a class="actionLink{TRIGGER.SEVERITY}" href="https://zabbix01.example.local/tr_events.php?triggerid={TRIGGER.ID}&amp;eventid={EVENT.ID}">Event</a></td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+    <div style="height:8px;"></div>
+  </td>
+</tr>
+<tr>
+  <td class="footer" style="padding:0;">
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse; background:#f8fafc; table-layout:fixed;">
+      <tr>
+        <td width="32%" style="padding:6px 8px; color:#6b7280; font-size:11px; text-align:left; white-space:nowrap;"><a href="https://zabbix01.example.local/" style="color:#6b7280 !important; text-decoration:none; font-weight:normal;">zabbix01.example.local</a></td>
+        <td width="2%" style="padding:6px 0; color:#cbd5e1; font-size:8px; line-height:1; text-align:center; vertical-align:middle;">&#183;</td>
+        <td width="32%" style="padding:6px 8px; color:#6b7280; font-size:11px; text-align:center; white-space:nowrap;">Severity {TRIGGER.SEVERITY}</td>
+        <td width="2%" style="padding:6px 0; color:#cbd5e1; font-size:8px; line-height:1; text-align:center; vertical-align:middle;">&#183;</td>
+        <td width="32%" style="padding:6px 8px; color:#6b7280; font-size:11px; text-align:right;">{{EVENT.TAGS}.regrepl("(^|, )Application:[[:space:]]*([^,]+)", "\1<a style='color:#6b7280 !important; text-decoration:none; font-weight:normal;' href='https://zabbix01.example.local/zabbix.php?action=item.list&amp;context=host&amp;filter_name=&amp;filter_key=&amp;filter_type=-1&amp;filter_value_type=-1&amp;filter_history=&amp;filter_trends=&amp;filter_delay=&amp;filter_evaltype=0&amp;filter_tags%5B0%5D%5Btag%5D=Application&amp;filter_tags%5B0%5D%5Boperator%5D=0&amp;filter_tags%5B0%5D%5Bvalue%5D=\2&amp;filter_state=-1&amp;filter_status=-1&amp;filter_with_triggers=-1&amp;filter_inherited=-1&amp;filter_discovered=-1&amp;filter_set=1&amp;sort=name&amp;sortorder=ASC'>#Application:\2</a>", "(^|, )([^:,<]+):[[:space:]]*([^,]+)", "\1<a style='color:#6b7280 !important; text-decoration:none; font-weight:normal;' href='https://zabbix01.example.local/zabbix.php?action=trigger.list&amp;context=host&amp;filter_name=&amp;filter_state=-1&amp;filter_status=-1&amp;filter_value=-1&amp;filter_evaltype=0&amp;filter_tags%5B0%5D%5Btag%5D=\2&amp;filter_tags%5B0%5D%5Boperator%5D=0&amp;filter_tags%5B0%5D%5Bvalue%5D=\3&amp;filter_inherited=-1&amp;filter_discovered=-1&amp;filter_dependent=-1&amp;filter_set=1'>#\2:\3</a>", "(^|, )([^:,<]+)(?=,|$)", "\1<a style='color:#6b7280 !important; text-decoration:none; font-weight:normal;' href='https://zabbix01.example.local/zabbix.php?action=trigger.list&amp;context=host&amp;filter_name=&amp;filter_state=-1&amp;filter_status=-1&amp;filter_value=-1&amp;filter_evaltype=0&amp;filter_tags%5B0%5D%5Btag%5D=\2&amp;filter_tags%5B0%5D%5Boperator%5D=0&amp;filter_tags%5B0%5D%5Bvalue%5D=&amp;filter_inherited=-1&amp;filter_discovered=-1&amp;filter_dependent=-1&amp;filter_set=1'>#\2</a>")}</td>
+      </tr>
+    </table>
+  </td>
+</tr>
+</table>
+</td></tr>
+</table>
+</body>
+</html>
+
+
+================================================================================
+
+Message type: Discovery
+Subject: Discovery: {DISCOVERY.DEVICE.STATUS} {DISCOVERY.DEVICE.IPADDRESS}
+Message:
+<!DOCTYPE html>
+<html>
+<!-- Template version: v26; Purpose: Discovery notification -->
+<head>
+<meta http-equiv="Content-type" content="text/html; charset=utf-8">
+<style type="text/css">
+  body { margin:0; padding:0; background-color:#f4f7fb; font-family:Arial, Helvetica, sans-serif; color:#2f3a4a; }
+  table { border-collapse:collapse; }
+  a { color:#1d4ed8; text-decoration:none; }
+
+  .outer { padding:10px; }
+  .wrap { width:520px; min-width:520px; max-width:676px; background:#ffffff; border:1px solid #dce6f2; }
+
+  .top-title { font-size:17px; font-weight:bold; color:#1f2d3d; }
+  .top-status { font-size:14px; font-weight:bold; color:#1f2d3d; text-align:right; white-space:nowrap; }
+  .resolved-title { color:#244b31 !important; }
+
+  .body-pad { padding:7px 8px 0 8px; }
+  .issue-title { font-size:16px; font-weight:bold; color:#374151; line-height:1.12; margin-bottom:2px; }
+  .issue-title-ok { font-size:16px; font-weight:bold; color:#276749; line-height:1.12; margin-bottom:2px; }
+  .resolvedTitle { font-size:16px; font-weight:bold; color:#276749 !important; line-height:1.12; margin-bottom:2px; }
+  .issue-meta { font-size:12px; color:#4f6072; line-height:1.12; }
+
+  .details { width:100%; border:1px solid #d9e2ec; margin-top:5px; table-layout:fixed; }
+  .details td { padding:2px 6px; border:1px solid #d9e2ec; vertical-align:middle; font-size:12.5px; line-height:1.05; word-break:normal; word-wrap:break-word; overflow-wrap:break-word; }
+  .label { width:116px; color:#5a6777; background:#f8fafc; white-space:nowrap; }
+  .host-value { font-size:18px; font-weight:bold; color:#1f2d3d; line-height:1.0; }
+  .big-value { font-size:18px; font-weight:bold; color:#1f2d3d; line-height:1.0; }
+  .muted { color:#6c7a89; font-size:12px; font-weight:normal; }
+
+  .section-title { margin-top:6px; margin-bottom:3px; font-size:13px; font-weight:bold; color:#334155; }
+  .item-box { width:100%; max-width:100%; border:1px solid #d9e2ec; table-layout:fixed; }
+  .item-box th { padding:3px 6px; border-bottom:1px solid #d9e2ec; background:#f8fafc; color:#5a6777; font-size:12px; line-height:1.1; text-align:left; font-weight:bold; word-break:normal; word-wrap:break-word; overflow-wrap:break-word; }
+  .item-box td { padding:3px 6px; border-bottom:1px solid #e6edf4; vertical-align:top; font-size:12px; line-height:1.12; word-break:normal; word-wrap:break-word; overflow-wrap:break-word; }
+  .item-box tr:last-child td { border-bottom:none; }
+  .item-name { color:#1f2d3d; font-size:12px; font-weight:normal; }
+  .item-meta { color:#7d8996; font-size:11px; font-weight:normal; }
+  .item-value { color:#1f2d3d; font-size:12px; font-weight:bold; white-space:normal; word-break:normal; word-wrap:break-word; overflow-wrap:break-word; }
+
+  .links { margin-top:6px; text-align:right; }
+  .actionTable { border-collapse:collapse !important; mso-table-lspace:0pt; mso-table-rspace:0pt; }
+  .actionWrapDisaster { border:1px solid #db7d88; padding:0; background:#fbe4e6; }
+  .actionWrapHigh { border:1px solid #d89ab8; padding:0; background:#fbe8f3; }
+  .actionWrapAverage { border:1px solid #efb27b; padding:0; background:#fff0e2; }
+  .actionWrapWarning { border:1px solid #dfc55f; padding:0; background:#fff8d9; }
+  .actionWrapInformation { border:1px solid #cbd5e1; padding:0; background:#f1f5f9; }
+  .actionWrapInformational { border:1px solid #cbd5e1; padding:0; background:#f1f5f9; }
+  .actionWrapNot { border:1px solid #cbd5e1; padding:0; background:#f1f5f9; }
+  .actionWrapOk { border:1px solid #79b68b; padding:0; background:#eef8f1; }
+  .actionTdDisaster { padding:4px 8px; border-left:1px solid #db7d88; background:#fbe4e6; line-height:1.1; font-size:13px; font-weight:bold; white-space:nowrap; }
+  .actionTdHigh { padding:4px 8px; border-left:1px solid #d89ab8; background:#fbe8f3; line-height:1.1; font-size:13px; font-weight:bold; white-space:nowrap; }
+  .actionTdAverage { padding:4px 8px; border-left:1px solid #efb27b; background:#fff0e2; line-height:1.1; font-size:13px; font-weight:bold; white-space:nowrap; }
+  .actionTdWarning { padding:4px 8px; border-left:1px solid #dfc55f; background:#fff8d9; line-height:1.1; font-size:13px; font-weight:bold; white-space:nowrap; }
+  .actionTdInformation { padding:4px 8px; border-left:1px solid #cbd5e1; background:#f1f5f9; line-height:1.1; font-size:13px; font-weight:bold; white-space:nowrap; }
+  .actionTdInformational { padding:4px 8px; border-left:1px solid #cbd5e1; background:#f1f5f9; line-height:1.1; font-size:13px; font-weight:bold; white-space:nowrap; }
+  .actionTdNot { padding:4px 8px; border-left:1px solid #cbd5e1; background:#f1f5f9; line-height:1.1; font-size:13px; font-weight:bold; white-space:nowrap; }
+  .actionTdOk { padding:4px 8px; border-left:1px solid #79b68b; background:#eef8f1; line-height:1.1; font-size:13px; font-weight:bold; white-space:nowrap; }
+  .actionLinkDisaster { color:#7f1d1d !important; text-decoration:none; font-weight:bold; }
+  .actionLinkHigh { color:#7a294f !important; text-decoration:none; font-weight:bold; }
+  .actionLinkAverage { color:#7c3f0f !important; text-decoration:none; font-weight:bold; }
+  .actionLinkWarning { color:#6b5b10 !important; text-decoration:none; font-weight:bold; }
+  .actionLinkInformation { color:#334155 !important; text-decoration:none; font-weight:bold; }
+  .actionLinkInformational { color:#334155 !important; text-decoration:none; font-weight:bold; }
+  .actionLinkNot { color:#334155 !important; text-decoration:none; font-weight:bold; }
+  .actionLinkOk { color:#276749 !important; text-decoration:none; font-weight:bold; }
+
+  .footer { background:#f8fafc; border-top:1px solid #e5eaf0; color:#6b7280; font-size:11px; padding:6px 8px; }
+
+  /*
+    v4 severity fix:
+    Outlook may ignore later classes when an element has multiple class names.
+    These templates therefore use exactly ONE severity class on colored elements:
+      sevBlock{TRIGGER.SEVERITY} and sevBadge{TRIGGER.SEVERITY}
+    Example after macro expansion:
+      class="sevBlockDisaster"
+      class="sevBadgeDisaster"
+  */
+
+  /* Disaster = soft red */
+  .sevBlockDisaster { background-color:#fbe4e6 !important; border-left-color:#db7d88 !important; }
+  .sevBadgeDisaster { background-color:#f7cfd4 !important; border-color:#e5a7af !important; color:#8f1f2c !important; }
+
+  /* High = soft pink */
+  .sevBlockHigh { background-color:#fbe8f3 !important; border-left-color:#d89ab8 !important; }
+  .sevBadgeHigh { background-color:#f7d8e7 !important; border-color:#e4b6cd !important; color:#8a3462 !important; }
+
+  /* Average = soft orange */
+  .sevBlockAverage { background-color:#fff0e2 !important; border-left-color:#efb27b !important; }
+  .sevBadgeAverage { background-color:#ffe0c2 !important; border-color:#edbe8d !important; color:#91541a !important; }
+
+  /* Warning = soft yellow */
+  .sevBlockWarning { background-color:#fff8d9 !important; border-left-color:#dfc55f !important; }
+  .sevBadgeWarning { background-color:#fff0b8 !important; border-color:#e7d484 !important; color:#7a6712 !important; }
+
+  /* Information / Informational / Not classified / fallback = soft blue */
+  .sevBlockInformation { background-color:#eaf4ff !important; border-left-color:#8fbce8 !important; }
+  .sevBlockInformational { background-color:#eaf4ff !important; border-left-color:#8fbce8 !important; }
+  .sevBlockNot { background-color:#eaf4ff !important; border-left-color:#8fbce8 !important; }
+  .sevBadgeInformation { background-color:#dcebff !important; border-color:#b7d3f3 !important; color:#24527a !important; }
+  .sevBadgeInformational { background-color:#dcebff !important; border-color:#b7d3f3 !important; color:#24527a !important; }
+  .sevBadgeNot { background-color:#dcebff !important; border-color:#b7d3f3 !important; color:#24527a !important; }
+
+  /* Severity-matched title/icon/action text colors */
+  .sevTitleDisaster { font-size:16px; font-weight:bold; color:#7f1d1d !important; line-height:1.12; margin-bottom:2px; }
+  .sevTitleHigh { font-size:16px; font-weight:bold; color:#7a294f !important; line-height:1.12; margin-bottom:2px; }
+  .sevTitleAverage { font-size:16px; font-weight:bold; color:#7c3f0f !important; line-height:1.12; margin-bottom:2px; }
+  .sevTitleWarning { font-size:16px; font-weight:bold; color:#6b5b10 !important; line-height:1.12; margin-bottom:2px; }
+  .sevTitleInformation { font-size:16px; font-weight:bold; color:#334155 !important; line-height:1.12; margin-bottom:2px; }
+  .sevTitleInformational { font-size:16px; font-weight:bold; color:#334155 !important; line-height:1.12; margin-bottom:2px; }
+  .sevTitleNot { font-size:16px; font-weight:bold; color:#334155 !important; line-height:1.12; margin-bottom:2px; }
+  .sevIconDisaster { color:#7f1d1d !important; }
+  .sevIconHigh { color:#7a294f !important; }
+  .sevIconAverage { color:#7c3f0f !important; }
+  .sevIconWarning { color:#6b5b10 !important; }
+  .sevIconInformation { color:#334155 !important; }
+  .sevIconInformational { color:#334155 !important; }
+  .sevIconNot { color:#334155 !important; }
+  .okIcon { color:#244b31 !important; }
+
+  /* Recovery-specific green */
+  .resolved-bg { background-color:#e7f5ea !important; border-left-color:#79b68b !important; }
+  .resolved-box { background-color:#eef8f1 !important; border-left-color:#79b68b !important; }
+  .ok-badge { background-color:#dff2e4 !important; border-color:#b9d9c1 !important; color:#2f6b42 !important; }
+
+  /* Static helper colors for non-trigger templates */
+  .blue-bg { background-color:#eaf4ff !important; border-left-color:#8fbce8 !important; }
+  .green-bg { background-color:#e7f5ea !important; border-left-color:#79b68b !important; }
+  .red-bg { background-color:#fbe4e6 !important; border-left-color:#db7d88 !important; }
+  .amber-bg { background-color:#fff8d9 !important; border-left-color:#dfc55f !important; }
+</style>
+</head>
+<body>
+<table width="100%" cellpadding="0" cellspacing="0" border="0">
+<tr><td align="center" class="outer">
+<table class="wrap" cellpadding="0" cellspacing="0" border="0" style="width:520px; min-width:520px; max-width:676px;">
+<tr><td class="blue-bg" style="padding:8px 16px; border-bottom:1px solid #d8e2ee;"><div style="font-size:17px; font-weight:bold; color:#24527a;">Discovery event</div></td></tr>
+<tr><td class="body-pad">
+  <table class="details" cellpadding="0" cellspacing="0" border="0">
+    <tr><td class="label">Discovery rule</td><td class="big-value">{DISCOVERY.RULE.NAME}</td></tr>
+    <tr><td class="label">Device IP</td><td>{DISCOVERY.DEVICE.IPADDRESS}</td></tr>
+    <tr><td class="label">Device DNS</td><td>{DISCOVERY.DEVICE.DNS}</td></tr>
+    <tr><td class="label">Device status</td><td>{DISCOVERY.DEVICE.STATUS}</td></tr>
+    <tr><td class="label">Device uptime</td><td>{DISCOVERY.DEVICE.UPTIME}</td></tr>
+    <tr><td class="label">Service name</td><td>{DISCOVERY.SERVICE.NAME}</td></tr>
+    <tr><td class="label">Service port</td><td>{DISCOVERY.SERVICE.PORT}</td></tr>
+    <tr><td class="label">Service status</td><td>{DISCOVERY.SERVICE.STATUS}</td></tr>
+    <tr><td class="label">Service uptime</td><td>{DISCOVERY.SERVICE.UPTIME}</td></tr>
+  </table>
+  <div style="height:8px;"></div>
+</td></tr>
+<tr><td class="footer">Zabbix discovery notification from <a href="https://zabbix01.example.local/" style="color:#6b7280 !important; text-decoration:none; font-weight:normal;">zabbix01.example.local</a></td></tr>
+</table>
+</td></tr>
+</table>
+</body>
+</html>
+
+
+================================================================================
+
+Message type: Autoregistration
+Subject: Autoregistration: {HOST.HOST}
+Message:
+<!DOCTYPE html>
+<html>
+<!-- Template version: v26; Purpose: Autoregistration notification -->
+<head>
+<meta http-equiv="Content-type" content="text/html; charset=utf-8">
+<style type="text/css">
+  body { margin:0; padding:0; background-color:#f4f7fb; font-family:Arial, Helvetica, sans-serif; color:#2f3a4a; }
+  table { border-collapse:collapse; }
+  a { color:#1d4ed8; text-decoration:none; }
+
+  .outer { padding:10px; }
+  .wrap { width:520px; min-width:520px; max-width:676px; background:#ffffff; border:1px solid #dce6f2; }
+
+  .top-title { font-size:17px; font-weight:bold; color:#1f2d3d; }
+  .top-status { font-size:14px; font-weight:bold; color:#1f2d3d; text-align:right; white-space:nowrap; }
+  .resolved-title { color:#244b31 !important; }
+
+  .body-pad { padding:7px 8px 0 8px; }
+  .issue-title { font-size:16px; font-weight:bold; color:#374151; line-height:1.12; margin-bottom:2px; }
+  .issue-title-ok { font-size:16px; font-weight:bold; color:#276749; line-height:1.12; margin-bottom:2px; }
+  .resolvedTitle { font-size:16px; font-weight:bold; color:#276749 !important; line-height:1.12; margin-bottom:2px; }
+  .issue-meta { font-size:12px; color:#4f6072; line-height:1.12; }
+
+  .details { width:100%; border:1px solid #d9e2ec; margin-top:5px; table-layout:fixed; }
+  .details td { padding:2px 6px; border:1px solid #d9e2ec; vertical-align:middle; font-size:12.5px; line-height:1.05; word-break:normal; word-wrap:break-word; overflow-wrap:break-word; }
+  .label { width:116px; color:#5a6777; background:#f8fafc; white-space:nowrap; }
+  .host-value { font-size:18px; font-weight:bold; color:#1f2d3d; line-height:1.0; }
+  .big-value { font-size:18px; font-weight:bold; color:#1f2d3d; line-height:1.0; }
+  .muted { color:#6c7a89; font-size:12px; font-weight:normal; }
+
+  .section-title { margin-top:6px; margin-bottom:3px; font-size:13px; font-weight:bold; color:#334155; }
+  .item-box { width:100%; max-width:100%; border:1px solid #d9e2ec; table-layout:fixed; }
+  .item-box th { padding:3px 6px; border-bottom:1px solid #d9e2ec; background:#f8fafc; color:#5a6777; font-size:12px; line-height:1.1; text-align:left; font-weight:bold; word-break:normal; word-wrap:break-word; overflow-wrap:break-word; }
+  .item-box td { padding:3px 6px; border-bottom:1px solid #e6edf4; vertical-align:top; font-size:12px; line-height:1.12; word-break:normal; word-wrap:break-word; overflow-wrap:break-word; }
+  .item-box tr:last-child td { border-bottom:none; }
+  .item-name { color:#1f2d3d; font-size:12px; font-weight:normal; }
+  .item-meta { color:#7d8996; font-size:11px; font-weight:normal; }
+  .item-value { color:#1f2d3d; font-size:12px; font-weight:bold; white-space:normal; word-break:normal; word-wrap:break-word; overflow-wrap:break-word; }
+
+  .links { margin-top:6px; text-align:right; }
+  .actionTable { border-collapse:collapse !important; mso-table-lspace:0pt; mso-table-rspace:0pt; }
+  .actionWrapDisaster { border:1px solid #db7d88; padding:0; background:#fbe4e6; }
+  .actionWrapHigh { border:1px solid #d89ab8; padding:0; background:#fbe8f3; }
+  .actionWrapAverage { border:1px solid #efb27b; padding:0; background:#fff0e2; }
+  .actionWrapWarning { border:1px solid #dfc55f; padding:0; background:#fff8d9; }
+  .actionWrapInformation { border:1px solid #cbd5e1; padding:0; background:#f1f5f9; }
+  .actionWrapInformational { border:1px solid #cbd5e1; padding:0; background:#f1f5f9; }
+  .actionWrapNot { border:1px solid #cbd5e1; padding:0; background:#f1f5f9; }
+  .actionWrapOk { border:1px solid #79b68b; padding:0; background:#eef8f1; }
+  .actionTdDisaster { padding:4px 8px; border-left:1px solid #db7d88; background:#fbe4e6; line-height:1.1; font-size:13px; font-weight:bold; white-space:nowrap; }
+  .actionTdHigh { padding:4px 8px; border-left:1px solid #d89ab8; background:#fbe8f3; line-height:1.1; font-size:13px; font-weight:bold; white-space:nowrap; }
+  .actionTdAverage { padding:4px 8px; border-left:1px solid #efb27b; background:#fff0e2; line-height:1.1; font-size:13px; font-weight:bold; white-space:nowrap; }
+  .actionTdWarning { padding:4px 8px; border-left:1px solid #dfc55f; background:#fff8d9; line-height:1.1; font-size:13px; font-weight:bold; white-space:nowrap; }
+  .actionTdInformation { padding:4px 8px; border-left:1px solid #cbd5e1; background:#f1f5f9; line-height:1.1; font-size:13px; font-weight:bold; white-space:nowrap; }
+  .actionTdInformational { padding:4px 8px; border-left:1px solid #cbd5e1; background:#f1f5f9; line-height:1.1; font-size:13px; font-weight:bold; white-space:nowrap; }
+  .actionTdNot { padding:4px 8px; border-left:1px solid #cbd5e1; background:#f1f5f9; line-height:1.1; font-size:13px; font-weight:bold; white-space:nowrap; }
+  .actionTdOk { padding:4px 8px; border-left:1px solid #79b68b; background:#eef8f1; line-height:1.1; font-size:13px; font-weight:bold; white-space:nowrap; }
+  .actionLinkDisaster { color:#7f1d1d !important; text-decoration:none; font-weight:bold; }
+  .actionLinkHigh { color:#7a294f !important; text-decoration:none; font-weight:bold; }
+  .actionLinkAverage { color:#7c3f0f !important; text-decoration:none; font-weight:bold; }
+  .actionLinkWarning { color:#6b5b10 !important; text-decoration:none; font-weight:bold; }
+  .actionLinkInformation { color:#334155 !important; text-decoration:none; font-weight:bold; }
+  .actionLinkInformational { color:#334155 !important; text-decoration:none; font-weight:bold; }
+  .actionLinkNot { color:#334155 !important; text-decoration:none; font-weight:bold; }
+  .actionLinkOk { color:#276749 !important; text-decoration:none; font-weight:bold; }
+
+  .footer { background:#f8fafc; border-top:1px solid #e5eaf0; color:#6b7280; font-size:11px; padding:6px 8px; }
+
+  /*
+    v4 severity fix:
+    Outlook may ignore later classes when an element has multiple class names.
+    These templates therefore use exactly ONE severity class on colored elements:
+      sevBlock{TRIGGER.SEVERITY} and sevBadge{TRIGGER.SEVERITY}
+    Example after macro expansion:
+      class="sevBlockDisaster"
+      class="sevBadgeDisaster"
+  */
+
+  /* Disaster = soft red */
+  .sevBlockDisaster { background-color:#fbe4e6 !important; border-left-color:#db7d88 !important; }
+  .sevBadgeDisaster { background-color:#f7cfd4 !important; border-color:#e5a7af !important; color:#8f1f2c !important; }
+
+  /* High = soft pink */
+  .sevBlockHigh { background-color:#fbe8f3 !important; border-left-color:#d89ab8 !important; }
+  .sevBadgeHigh { background-color:#f7d8e7 !important; border-color:#e4b6cd !important; color:#8a3462 !important; }
+
+  /* Average = soft orange */
+  .sevBlockAverage { background-color:#fff0e2 !important; border-left-color:#efb27b !important; }
+  .sevBadgeAverage { background-color:#ffe0c2 !important; border-color:#edbe8d !important; color:#91541a !important; }
+
+  /* Warning = soft yellow */
+  .sevBlockWarning { background-color:#fff8d9 !important; border-left-color:#dfc55f !important; }
+  .sevBadgeWarning { background-color:#fff0b8 !important; border-color:#e7d484 !important; color:#7a6712 !important; }
+
+  /* Information / Informational / Not classified / fallback = soft blue */
+  .sevBlockInformation { background-color:#eaf4ff !important; border-left-color:#8fbce8 !important; }
+  .sevBlockInformational { background-color:#eaf4ff !important; border-left-color:#8fbce8 !important; }
+  .sevBlockNot { background-color:#eaf4ff !important; border-left-color:#8fbce8 !important; }
+  .sevBadgeInformation { background-color:#dcebff !important; border-color:#b7d3f3 !important; color:#24527a !important; }
+  .sevBadgeInformational { background-color:#dcebff !important; border-color:#b7d3f3 !important; color:#24527a !important; }
+  .sevBadgeNot { background-color:#dcebff !important; border-color:#b7d3f3 !important; color:#24527a !important; }
+
+  /* Severity-matched title/icon/action text colors */
+  .sevTitleDisaster { font-size:16px; font-weight:bold; color:#7f1d1d !important; line-height:1.12; margin-bottom:2px; }
+  .sevTitleHigh { font-size:16px; font-weight:bold; color:#7a294f !important; line-height:1.12; margin-bottom:2px; }
+  .sevTitleAverage { font-size:16px; font-weight:bold; color:#7c3f0f !important; line-height:1.12; margin-bottom:2px; }
+  .sevTitleWarning { font-size:16px; font-weight:bold; color:#6b5b10 !important; line-height:1.12; margin-bottom:2px; }
+  .sevTitleInformation { font-size:16px; font-weight:bold; color:#334155 !important; line-height:1.12; margin-bottom:2px; }
+  .sevTitleInformational { font-size:16px; font-weight:bold; color:#334155 !important; line-height:1.12; margin-bottom:2px; }
+  .sevTitleNot { font-size:16px; font-weight:bold; color:#334155 !important; line-height:1.12; margin-bottom:2px; }
+  .sevIconDisaster { color:#7f1d1d !important; }
+  .sevIconHigh { color:#7a294f !important; }
+  .sevIconAverage { color:#7c3f0f !important; }
+  .sevIconWarning { color:#6b5b10 !important; }
+  .sevIconInformation { color:#334155 !important; }
+  .sevIconInformational { color:#334155 !important; }
+  .sevIconNot { color:#334155 !important; }
+  .okIcon { color:#244b31 !important; }
+
+  /* Recovery-specific green */
+  .resolved-bg { background-color:#e7f5ea !important; border-left-color:#79b68b !important; }
+  .resolved-box { background-color:#eef8f1 !important; border-left-color:#79b68b !important; }
+  .ok-badge { background-color:#dff2e4 !important; border-color:#b9d9c1 !important; color:#2f6b42 !important; }
+
+  /* Static helper colors for non-trigger templates */
+  .blue-bg { background-color:#eaf4ff !important; border-left-color:#8fbce8 !important; }
+  .green-bg { background-color:#e7f5ea !important; border-left-color:#79b68b !important; }
+  .red-bg { background-color:#fbe4e6 !important; border-left-color:#db7d88 !important; }
+  .amber-bg { background-color:#fff8d9 !important; border-left-color:#dfc55f !important; }
+</style>
+</head>
+<body>
+<table width="100%" cellpadding="0" cellspacing="0" border="0">
+<tr><td align="center" class="outer">
+<table class="wrap" cellpadding="0" cellspacing="0" border="0" style="width:520px; min-width:520px; max-width:676px;">
+<tr><td class="blue-bg" style="padding:8px 16px; border-bottom:1px solid #d8e2ee;"><div style="font-size:17px; font-weight:bold; color:#24527a;">Host autoregistration</div></td></tr>
+<tr><td class="body-pad">
+  <table class="details" cellpadding="0" cellspacing="0" border="0">
+    <tr><td class="label">Host name</td><td class="big-value">{HOST.HOST}</td></tr>
+    <tr><td class="label">Host IP</td><td>{HOST.IP}</td></tr>
+    <tr><td class="label">Agent port</td><td>{HOST.PORT}</td></tr>
+  </table>
+  <div style="height:8px;"></div>
+</td></tr>
+<tr><td class="footer">Zabbix autoregistration notification from <a href="https://zabbix01.example.local/" style="color:#6b7280 !important; text-decoration:none; font-weight:normal;">zabbix01.example.local</a></td></tr>
+</table>
+</td></tr>
+</table>
+</body>
+</html>
+
+
+================================================================================
+
+Message type: Service
+Subject: SERVICE PROBLEM: {SERVICE.NAME}
+Message:
+<!DOCTYPE html>
+<html>
+<!-- Template version: v26; Purpose: Service problem notification -->
+<head>
+<meta http-equiv="Content-type" content="text/html; charset=utf-8">
+<style type="text/css">
+  body { margin:0; padding:0; background-color:#f4f7fb; font-family:Arial, Helvetica, sans-serif; color:#2f3a4a; }
+  table { border-collapse:collapse; }
+  a { color:#1d4ed8; text-decoration:none; }
+
+  .outer { padding:10px; }
+  .wrap { width:520px; min-width:520px; max-width:676px; background:#ffffff; border:1px solid #dce6f2; }
+
+  .top-title { font-size:17px; font-weight:bold; color:#1f2d3d; }
+  .top-status { font-size:14px; font-weight:bold; color:#1f2d3d; text-align:right; white-space:nowrap; }
+  .resolved-title { color:#244b31 !important; }
+
+  .body-pad { padding:7px 8px 0 8px; }
+  .issue-title { font-size:16px; font-weight:bold; color:#374151; line-height:1.12; margin-bottom:2px; }
+  .issue-title-ok { font-size:16px; font-weight:bold; color:#276749; line-height:1.12; margin-bottom:2px; }
+  .resolvedTitle { font-size:16px; font-weight:bold; color:#276749 !important; line-height:1.12; margin-bottom:2px; }
+  .issue-meta { font-size:12px; color:#4f6072; line-height:1.12; }
+
+  .details { width:100%; border:1px solid #d9e2ec; margin-top:5px; table-layout:fixed; }
+  .details td { padding:2px 6px; border:1px solid #d9e2ec; vertical-align:middle; font-size:12.5px; line-height:1.05; word-break:normal; word-wrap:break-word; overflow-wrap:break-word; }
+  .label { width:116px; color:#5a6777; background:#f8fafc; white-space:nowrap; }
+  .host-value { font-size:18px; font-weight:bold; color:#1f2d3d; line-height:1.0; }
+  .big-value { font-size:18px; font-weight:bold; color:#1f2d3d; line-height:1.0; }
+  .muted { color:#6c7a89; font-size:12px; font-weight:normal; }
+
+  .section-title { margin-top:6px; margin-bottom:3px; font-size:13px; font-weight:bold; color:#334155; }
+  .item-box { width:100%; max-width:100%; border:1px solid #d9e2ec; table-layout:fixed; }
+  .item-box th { padding:3px 6px; border-bottom:1px solid #d9e2ec; background:#f8fafc; color:#5a6777; font-size:12px; line-height:1.1; text-align:left; font-weight:bold; word-break:normal; word-wrap:break-word; overflow-wrap:break-word; }
+  .item-box td { padding:3px 6px; border-bottom:1px solid #e6edf4; vertical-align:top; font-size:12px; line-height:1.12; word-break:normal; word-wrap:break-word; overflow-wrap:break-word; }
+  .item-box tr:last-child td { border-bottom:none; }
+  .item-name { color:#1f2d3d; font-size:12px; font-weight:normal; }
+  .item-meta { color:#7d8996; font-size:11px; font-weight:normal; }
+  .item-value { color:#1f2d3d; font-size:12px; font-weight:bold; white-space:normal; word-break:normal; word-wrap:break-word; overflow-wrap:break-word; }
+
+  .links { margin-top:6px; text-align:right; }
+  .actionTable { border-collapse:collapse !important; mso-table-lspace:0pt; mso-table-rspace:0pt; }
+  .actionWrapDisaster { border:1px solid #db7d88; padding:0; background:#fbe4e6; }
+  .actionWrapHigh { border:1px solid #d89ab8; padding:0; background:#fbe8f3; }
+  .actionWrapAverage { border:1px solid #efb27b; padding:0; background:#fff0e2; }
+  .actionWrapWarning { border:1px solid #dfc55f; padding:0; background:#fff8d9; }
+  .actionWrapInformation { border:1px solid #cbd5e1; padding:0; background:#f1f5f9; }
+  .actionWrapInformational { border:1px solid #cbd5e1; padding:0; background:#f1f5f9; }
+  .actionWrapNot { border:1px solid #cbd5e1; padding:0; background:#f1f5f9; }
+  .actionWrapOk { border:1px solid #79b68b; padding:0; background:#eef8f1; }
+  .actionTdDisaster { padding:4px 8px; border-left:1px solid #db7d88; background:#fbe4e6; line-height:1.1; font-size:13px; font-weight:bold; white-space:nowrap; }
+  .actionTdHigh { padding:4px 8px; border-left:1px solid #d89ab8; background:#fbe8f3; line-height:1.1; font-size:13px; font-weight:bold; white-space:nowrap; }
+  .actionTdAverage { padding:4px 8px; border-left:1px solid #efb27b; background:#fff0e2; line-height:1.1; font-size:13px; font-weight:bold; white-space:nowrap; }
+  .actionTdWarning { padding:4px 8px; border-left:1px solid #dfc55f; background:#fff8d9; line-height:1.1; font-size:13px; font-weight:bold; white-space:nowrap; }
+  .actionTdInformation { padding:4px 8px; border-left:1px solid #cbd5e1; background:#f1f5f9; line-height:1.1; font-size:13px; font-weight:bold; white-space:nowrap; }
+  .actionTdInformational { padding:4px 8px; border-left:1px solid #cbd5e1; background:#f1f5f9; line-height:1.1; font-size:13px; font-weight:bold; white-space:nowrap; }
+  .actionTdNot { padding:4px 8px; border-left:1px solid #cbd5e1; background:#f1f5f9; line-height:1.1; font-size:13px; font-weight:bold; white-space:nowrap; }
+  .actionTdOk { padding:4px 8px; border-left:1px solid #79b68b; background:#eef8f1; line-height:1.1; font-size:13px; font-weight:bold; white-space:nowrap; }
+  .actionLinkDisaster { color:#7f1d1d !important; text-decoration:none; font-weight:bold; }
+  .actionLinkHigh { color:#7a294f !important; text-decoration:none; font-weight:bold; }
+  .actionLinkAverage { color:#7c3f0f !important; text-decoration:none; font-weight:bold; }
+  .actionLinkWarning { color:#6b5b10 !important; text-decoration:none; font-weight:bold; }
+  .actionLinkInformation { color:#334155 !important; text-decoration:none; font-weight:bold; }
+  .actionLinkInformational { color:#334155 !important; text-decoration:none; font-weight:bold; }
+  .actionLinkNot { color:#334155 !important; text-decoration:none; font-weight:bold; }
+  .actionLinkOk { color:#276749 !important; text-decoration:none; font-weight:bold; }
+
+  .footer { background:#f8fafc; border-top:1px solid #e5eaf0; color:#6b7280; font-size:11px; padding:6px 8px; }
+
+  /*
+    v4 severity fix:
+    Outlook may ignore later classes when an element has multiple class names.
+    These templates therefore use exactly ONE severity class on colored elements:
+      sevBlock{TRIGGER.SEVERITY} and sevBadge{TRIGGER.SEVERITY}
+    Example after macro expansion:
+      class="sevBlockDisaster"
+      class="sevBadgeDisaster"
+  */
+
+  /* Disaster = soft red */
+  .sevBlockDisaster { background-color:#fbe4e6 !important; border-left-color:#db7d88 !important; }
+  .sevBadgeDisaster { background-color:#f7cfd4 !important; border-color:#e5a7af !important; color:#8f1f2c !important; }
+
+  /* High = soft pink */
+  .sevBlockHigh { background-color:#fbe8f3 !important; border-left-color:#d89ab8 !important; }
+  .sevBadgeHigh { background-color:#f7d8e7 !important; border-color:#e4b6cd !important; color:#8a3462 !important; }
+
+  /* Average = soft orange */
+  .sevBlockAverage { background-color:#fff0e2 !important; border-left-color:#efb27b !important; }
+  .sevBadgeAverage { background-color:#ffe0c2 !important; border-color:#edbe8d !important; color:#91541a !important; }
+
+  /* Warning = soft yellow */
+  .sevBlockWarning { background-color:#fff8d9 !important; border-left-color:#dfc55f !important; }
+  .sevBadgeWarning { background-color:#fff0b8 !important; border-color:#e7d484 !important; color:#7a6712 !important; }
+
+  /* Information / Informational / Not classified / fallback = soft blue */
+  .sevBlockInformation { background-color:#eaf4ff !important; border-left-color:#8fbce8 !important; }
+  .sevBlockInformational { background-color:#eaf4ff !important; border-left-color:#8fbce8 !important; }
+  .sevBlockNot { background-color:#eaf4ff !important; border-left-color:#8fbce8 !important; }
+  .sevBadgeInformation { background-color:#dcebff !important; border-color:#b7d3f3 !important; color:#24527a !important; }
+  .sevBadgeInformational { background-color:#dcebff !important; border-color:#b7d3f3 !important; color:#24527a !important; }
+  .sevBadgeNot { background-color:#dcebff !important; border-color:#b7d3f3 !important; color:#24527a !important; }
+
+  /* Severity-matched title/icon/action text colors */
+  .sevTitleDisaster { font-size:16px; font-weight:bold; color:#7f1d1d !important; line-height:1.12; margin-bottom:2px; }
+  .sevTitleHigh { font-size:16px; font-weight:bold; color:#7a294f !important; line-height:1.12; margin-bottom:2px; }
+  .sevTitleAverage { font-size:16px; font-weight:bold; color:#7c3f0f !important; line-height:1.12; margin-bottom:2px; }
+  .sevTitleWarning { font-size:16px; font-weight:bold; color:#6b5b10 !important; line-height:1.12; margin-bottom:2px; }
+  .sevTitleInformation { font-size:16px; font-weight:bold; color:#334155 !important; line-height:1.12; margin-bottom:2px; }
+  .sevTitleInformational { font-size:16px; font-weight:bold; color:#334155 !important; line-height:1.12; margin-bottom:2px; }
+  .sevTitleNot { font-size:16px; font-weight:bold; color:#334155 !important; line-height:1.12; margin-bottom:2px; }
+  .sevIconDisaster { color:#7f1d1d !important; }
+  .sevIconHigh { color:#7a294f !important; }
+  .sevIconAverage { color:#7c3f0f !important; }
+  .sevIconWarning { color:#6b5b10 !important; }
+  .sevIconInformation { color:#334155 !important; }
+  .sevIconInformational { color:#334155 !important; }
+  .sevIconNot { color:#334155 !important; }
+  .okIcon { color:#244b31 !important; }
+
+  /* Recovery-specific green */
+  .resolved-bg { background-color:#e7f5ea !important; border-left-color:#79b68b !important; }
+  .resolved-box { background-color:#eef8f1 !important; border-left-color:#79b68b !important; }
+  .ok-badge { background-color:#dff2e4 !important; border-color:#b9d9c1 !important; color:#2f6b42 !important; }
+
+  /* Static helper colors for non-trigger templates */
+  .blue-bg { background-color:#eaf4ff !important; border-left-color:#8fbce8 !important; }
+  .green-bg { background-color:#e7f5ea !important; border-left-color:#79b68b !important; }
+  .red-bg { background-color:#fbe4e6 !important; border-left-color:#db7d88 !important; }
+  .amber-bg { background-color:#fff8d9 !important; border-left-color:#dfc55f !important; }
+</style>
+</head>
+<body>
+<table width="100%" cellpadding="0" cellspacing="0" border="0">
+<tr><td align="center" class="outer">
+<table class="wrap" cellpadding="0" cellspacing="0" border="0" style="width:520px; min-width:520px; max-width:676px;">
+<tr><td class="red-bg" style="padding:8px 16px; border-bottom:1px solid #d8e2ee;"><div style="font-size:17px; font-weight:bold; color:#8f1f2c;">⚠ Service problem</div></td></tr>
+<tr><td class="body-pad">
+  <table class="details" cellpadding="0" cellspacing="0" border="0">
+    <tr><td class="label">Service</td><td class="big-value">{SERVICE.NAME}</td></tr>
+    <tr><td class="label">Status</td><td>{SERVICE.STATUS}</td></tr>
+    <tr><td class="label">Description</td><td>{SERVICE.DESCRIPTION}</td></tr>
+    <tr><td class="label">Root cause</td><td>{SERVICE.ROOTCAUSE}</td></tr>
+    <tr><td class="label">Tags</td><td>{SERVICE.TAGS}</td></tr>
+    <tr><td class="label">Problem started</td><td>{EVENT.DATE} {EVENT.TIME}</td></tr>
+    <tr><td class="label">Event ID</td><td>{EVENT.ID}</td></tr>
+  </table>
+  <div style="height:8px;"></div>
+</td></tr>
+<tr><td class="footer">Zabbix service notification from <a href="https://zabbix01.example.local/" style="color:#6b7280 !important; text-decoration:none; font-weight:normal;">zabbix01.example.local</a></td></tr>
+</table>
+</td></tr>
+</table>
+</body>
+</html>
+
+
+================================================================================
+
+Message type: Service recovery
+Subject: SERVICE RESOLVED: {SERVICE.NAME}
+Message:
+<!DOCTYPE html>
+<html>
+<!-- Template version: v26; Purpose: Service recovery notification -->
+<head>
+<meta http-equiv="Content-type" content="text/html; charset=utf-8">
+<style type="text/css">
+  body { margin:0; padding:0; background-color:#f4f7fb; font-family:Arial, Helvetica, sans-serif; color:#2f3a4a; }
+  table { border-collapse:collapse; }
+  a { color:#1d4ed8; text-decoration:none; }
+
+  .outer { padding:10px; }
+  .wrap { width:520px; min-width:520px; max-width:676px; background:#ffffff; border:1px solid #dce6f2; }
+
+  .top-title { font-size:17px; font-weight:bold; color:#1f2d3d; }
+  .top-status { font-size:14px; font-weight:bold; color:#1f2d3d; text-align:right; white-space:nowrap; }
+  .resolved-title { color:#244b31 !important; }
+
+  .body-pad { padding:7px 8px 0 8px; }
+  .issue-title { font-size:16px; font-weight:bold; color:#374151; line-height:1.12; margin-bottom:2px; }
+  .issue-title-ok { font-size:16px; font-weight:bold; color:#276749; line-height:1.12; margin-bottom:2px; }
+  .resolvedTitle { font-size:16px; font-weight:bold; color:#276749 !important; line-height:1.12; margin-bottom:2px; }
+  .issue-meta { font-size:12px; color:#4f6072; line-height:1.12; }
+
+  .details { width:100%; border:1px solid #d9e2ec; margin-top:5px; table-layout:fixed; }
+  .details td { padding:2px 6px; border:1px solid #d9e2ec; vertical-align:middle; font-size:12.5px; line-height:1.05; word-break:normal; word-wrap:break-word; overflow-wrap:break-word; }
+  .label { width:116px; color:#5a6777; background:#f8fafc; white-space:nowrap; }
+  .host-value { font-size:18px; font-weight:bold; color:#1f2d3d; line-height:1.0; }
+  .big-value { font-size:18px; font-weight:bold; color:#1f2d3d; line-height:1.0; }
+  .muted { color:#6c7a89; font-size:12px; font-weight:normal; }
+
+  .section-title { margin-top:6px; margin-bottom:3px; font-size:13px; font-weight:bold; color:#334155; }
+  .item-box { width:100%; max-width:100%; border:1px solid #d9e2ec; table-layout:fixed; }
+  .item-box th { padding:3px 6px; border-bottom:1px solid #d9e2ec; background:#f8fafc; color:#5a6777; font-size:12px; line-height:1.1; text-align:left; font-weight:bold; word-break:normal; word-wrap:break-word; overflow-wrap:break-word; }
+  .item-box td { padding:3px 6px; border-bottom:1px solid #e6edf4; vertical-align:top; font-size:12px; line-height:1.12; word-break:normal; word-wrap:break-word; overflow-wrap:break-word; }
+  .item-box tr:last-child td { border-bottom:none; }
+  .item-name { color:#1f2d3d; font-size:12px; font-weight:normal; }
+  .item-meta { color:#7d8996; font-size:11px; font-weight:normal; }
+  .item-value { color:#1f2d3d; font-size:12px; font-weight:bold; white-space:normal; word-break:normal; word-wrap:break-word; overflow-wrap:break-word; }
+
+  .links { margin-top:6px; text-align:right; }
+  .actionTable { border-collapse:collapse !important; mso-table-lspace:0pt; mso-table-rspace:0pt; }
+  .actionWrapDisaster { border:1px solid #db7d88; padding:0; background:#fbe4e6; }
+  .actionWrapHigh { border:1px solid #d89ab8; padding:0; background:#fbe8f3; }
+  .actionWrapAverage { border:1px solid #efb27b; padding:0; background:#fff0e2; }
+  .actionWrapWarning { border:1px solid #dfc55f; padding:0; background:#fff8d9; }
+  .actionWrapInformation { border:1px solid #cbd5e1; padding:0; background:#f1f5f9; }
+  .actionWrapInformational { border:1px solid #cbd5e1; padding:0; background:#f1f5f9; }
+  .actionWrapNot { border:1px solid #cbd5e1; padding:0; background:#f1f5f9; }
+  .actionWrapOk { border:1px solid #79b68b; padding:0; background:#eef8f1; }
+  .actionTdDisaster { padding:4px 8px; border-left:1px solid #db7d88; background:#fbe4e6; line-height:1.1; font-size:13px; font-weight:bold; white-space:nowrap; }
+  .actionTdHigh { padding:4px 8px; border-left:1px solid #d89ab8; background:#fbe8f3; line-height:1.1; font-size:13px; font-weight:bold; white-space:nowrap; }
+  .actionTdAverage { padding:4px 8px; border-left:1px solid #efb27b; background:#fff0e2; line-height:1.1; font-size:13px; font-weight:bold; white-space:nowrap; }
+  .actionTdWarning { padding:4px 8px; border-left:1px solid #dfc55f; background:#fff8d9; line-height:1.1; font-size:13px; font-weight:bold; white-space:nowrap; }
+  .actionTdInformation { padding:4px 8px; border-left:1px solid #cbd5e1; background:#f1f5f9; line-height:1.1; font-size:13px; font-weight:bold; white-space:nowrap; }
+  .actionTdInformational { padding:4px 8px; border-left:1px solid #cbd5e1; background:#f1f5f9; line-height:1.1; font-size:13px; font-weight:bold; white-space:nowrap; }
+  .actionTdNot { padding:4px 8px; border-left:1px solid #cbd5e1; background:#f1f5f9; line-height:1.1; font-size:13px; font-weight:bold; white-space:nowrap; }
+  .actionTdOk { padding:4px 8px; border-left:1px solid #79b68b; background:#eef8f1; line-height:1.1; font-size:13px; font-weight:bold; white-space:nowrap; }
+  .actionLinkDisaster { color:#7f1d1d !important; text-decoration:none; font-weight:bold; }
+  .actionLinkHigh { color:#7a294f !important; text-decoration:none; font-weight:bold; }
+  .actionLinkAverage { color:#7c3f0f !important; text-decoration:none; font-weight:bold; }
+  .actionLinkWarning { color:#6b5b10 !important; text-decoration:none; font-weight:bold; }
+  .actionLinkInformation { color:#334155 !important; text-decoration:none; font-weight:bold; }
+  .actionLinkInformational { color:#334155 !important; text-decoration:none; font-weight:bold; }
+  .actionLinkNot { color:#334155 !important; text-decoration:none; font-weight:bold; }
+  .actionLinkOk { color:#276749 !important; text-decoration:none; font-weight:bold; }
+
+  .footer { background:#f8fafc; border-top:1px solid #e5eaf0; color:#6b7280; font-size:11px; padding:6px 8px; }
+
+  /*
+    v4 severity fix:
+    Outlook may ignore later classes when an element has multiple class names.
+    These templates therefore use exactly ONE severity class on colored elements:
+      sevBlock{TRIGGER.SEVERITY} and sevBadge{TRIGGER.SEVERITY}
+    Example after macro expansion:
+      class="sevBlockDisaster"
+      class="sevBadgeDisaster"
+  */
+
+  /* Disaster = soft red */
+  .sevBlockDisaster { background-color:#fbe4e6 !important; border-left-color:#db7d88 !important; }
+  .sevBadgeDisaster { background-color:#f7cfd4 !important; border-color:#e5a7af !important; color:#8f1f2c !important; }
+
+  /* High = soft pink */
+  .sevBlockHigh { background-color:#fbe8f3 !important; border-left-color:#d89ab8 !important; }
+  .sevBadgeHigh { background-color:#f7d8e7 !important; border-color:#e4b6cd !important; color:#8a3462 !important; }
+
+  /* Average = soft orange */
+  .sevBlockAverage { background-color:#fff0e2 !important; border-left-color:#efb27b !important; }
+  .sevBadgeAverage { background-color:#ffe0c2 !important; border-color:#edbe8d !important; color:#91541a !important; }
+
+  /* Warning = soft yellow */
+  .sevBlockWarning { background-color:#fff8d9 !important; border-left-color:#dfc55f !important; }
+  .sevBadgeWarning { background-color:#fff0b8 !important; border-color:#e7d484 !important; color:#7a6712 !important; }
+
+  /* Information / Informational / Not classified / fallback = soft blue */
+  .sevBlockInformation { background-color:#eaf4ff !important; border-left-color:#8fbce8 !important; }
+  .sevBlockInformational { background-color:#eaf4ff !important; border-left-color:#8fbce8 !important; }
+  .sevBlockNot { background-color:#eaf4ff !important; border-left-color:#8fbce8 !important; }
+  .sevBadgeInformation { background-color:#dcebff !important; border-color:#b7d3f3 !important; color:#24527a !important; }
+  .sevBadgeInformational { background-color:#dcebff !important; border-color:#b7d3f3 !important; color:#24527a !important; }
+  .sevBadgeNot { background-color:#dcebff !important; border-color:#b7d3f3 !important; color:#24527a !important; }
+
+  /* Severity-matched title/icon/action text colors */
+  .sevTitleDisaster { font-size:16px; font-weight:bold; color:#7f1d1d !important; line-height:1.12; margin-bottom:2px; }
+  .sevTitleHigh { font-size:16px; font-weight:bold; color:#7a294f !important; line-height:1.12; margin-bottom:2px; }
+  .sevTitleAverage { font-size:16px; font-weight:bold; color:#7c3f0f !important; line-height:1.12; margin-bottom:2px; }
+  .sevTitleWarning { font-size:16px; font-weight:bold; color:#6b5b10 !important; line-height:1.12; margin-bottom:2px; }
+  .sevTitleInformation { font-size:16px; font-weight:bold; color:#334155 !important; line-height:1.12; margin-bottom:2px; }
+  .sevTitleInformational { font-size:16px; font-weight:bold; color:#334155 !important; line-height:1.12; margin-bottom:2px; }
+  .sevTitleNot { font-size:16px; font-weight:bold; color:#334155 !important; line-height:1.12; margin-bottom:2px; }
+  .sevIconDisaster { color:#7f1d1d !important; }
+  .sevIconHigh { color:#7a294f !important; }
+  .sevIconAverage { color:#7c3f0f !important; }
+  .sevIconWarning { color:#6b5b10 !important; }
+  .sevIconInformation { color:#334155 !important; }
+  .sevIconInformational { color:#334155 !important; }
+  .sevIconNot { color:#334155 !important; }
+  .okIcon { color:#244b31 !important; }
+
+  /* Recovery-specific green */
+  .resolved-bg { background-color:#e7f5ea !important; border-left-color:#79b68b !important; }
+  .resolved-box { background-color:#eef8f1 !important; border-left-color:#79b68b !important; }
+  .ok-badge { background-color:#dff2e4 !important; border-color:#b9d9c1 !important; color:#2f6b42 !important; }
+
+  /* Static helper colors for non-trigger templates */
+  .blue-bg { background-color:#eaf4ff !important; border-left-color:#8fbce8 !important; }
+  .green-bg { background-color:#e7f5ea !important; border-left-color:#79b68b !important; }
+  .red-bg { background-color:#fbe4e6 !important; border-left-color:#db7d88 !important; }
+  .amber-bg { background-color:#fff8d9 !important; border-left-color:#dfc55f !important; }
+</style>
+</head>
+<body>
+<table width="100%" cellpadding="0" cellspacing="0" border="0">
+<tr><td align="center" class="outer">
+<table class="wrap" cellpadding="0" cellspacing="0" border="0" style="width:520px; min-width:520px; max-width:676px;">
+<tr><td class="green-bg" style="padding:8px 16px; border-bottom:1px solid #d8e2ee;"><div style="font-size:17px; font-weight:bold; color:#244b31;">✔ Service recovered</div></td></tr>
+<tr><td class="body-pad">
+  <table class="details" cellpadding="0" cellspacing="0" border="0">
+    <tr><td class="label">Service</td><td class="big-value">{SERVICE.NAME}</td></tr>
+    <tr><td class="label">Status</td><td>{SERVICE.STATUS}</td></tr>
+    <tr><td class="label">Description</td><td>{SERVICE.DESCRIPTION}</td></tr>
+    <tr><td class="label">Root cause</td><td>{SERVICE.ROOTCAUSE}</td></tr>
+    <tr><td class="label">Tags</td><td>{SERVICE.TAGS}</td></tr>
+    <tr><td class="label">Problem started</td><td>{EVENT.DATE} {EVENT.TIME}</td></tr>
+    <tr><td class="label">Event ID</td><td>{EVENT.ID}</td></tr>
+  </table>
+  <div style="height:8px;"></div>
+</td></tr>
+<tr><td class="footer">Zabbix service recovery notification from <a href="https://zabbix01.example.local/" style="color:#6b7280 !important; text-decoration:none; font-weight:normal;">zabbix01.example.local</a></td></tr>
+</table>
+</td></tr>
+</table>
+</body>
+</html>
+
+
+================================================================================
+
+Message type: Service update
+Subject: SERVICE UPDATE: {SERVICE.NAME}
+Message:
+<!DOCTYPE html>
+<html>
+<!-- Template version: v26; Purpose: Service update notification -->
+<head>
+<meta http-equiv="Content-type" content="text/html; charset=utf-8">
+<style type="text/css">
+  body { margin:0; padding:0; background-color:#f4f7fb; font-family:Arial, Helvetica, sans-serif; color:#2f3a4a; }
+  table { border-collapse:collapse; }
+  a { color:#1d4ed8; text-decoration:none; }
+
+  .outer { padding:10px; }
+  .wrap { width:520px; min-width:520px; max-width:676px; background:#ffffff; border:1px solid #dce6f2; }
+
+  .top-title { font-size:17px; font-weight:bold; color:#1f2d3d; }
+  .top-status { font-size:14px; font-weight:bold; color:#1f2d3d; text-align:right; white-space:nowrap; }
+  .resolved-title { color:#244b31 !important; }
+
+  .body-pad { padding:7px 8px 0 8px; }
+  .issue-title { font-size:16px; font-weight:bold; color:#374151; line-height:1.12; margin-bottom:2px; }
+  .issue-title-ok { font-size:16px; font-weight:bold; color:#276749; line-height:1.12; margin-bottom:2px; }
+  .resolvedTitle { font-size:16px; font-weight:bold; color:#276749 !important; line-height:1.12; margin-bottom:2px; }
+  .issue-meta { font-size:12px; color:#4f6072; line-height:1.12; }
+
+  .details { width:100%; border:1px solid #d9e2ec; margin-top:5px; table-layout:fixed; }
+  .details td { padding:2px 6px; border:1px solid #d9e2ec; vertical-align:middle; font-size:12.5px; line-height:1.05; word-break:normal; word-wrap:break-word; overflow-wrap:break-word; }
+  .label { width:116px; color:#5a6777; background:#f8fafc; white-space:nowrap; }
+  .host-value { font-size:18px; font-weight:bold; color:#1f2d3d; line-height:1.0; }
+  .big-value { font-size:18px; font-weight:bold; color:#1f2d3d; line-height:1.0; }
+  .muted { color:#6c7a89; font-size:12px; font-weight:normal; }
+
+  .section-title { margin-top:6px; margin-bottom:3px; font-size:13px; font-weight:bold; color:#334155; }
+  .item-box { width:100%; max-width:100%; border:1px solid #d9e2ec; table-layout:fixed; }
+  .item-box th { padding:3px 6px; border-bottom:1px solid #d9e2ec; background:#f8fafc; color:#5a6777; font-size:12px; line-height:1.1; text-align:left; font-weight:bold; word-break:normal; word-wrap:break-word; overflow-wrap:break-word; }
+  .item-box td { padding:3px 6px; border-bottom:1px solid #e6edf4; vertical-align:top; font-size:12px; line-height:1.12; word-break:normal; word-wrap:break-word; overflow-wrap:break-word; }
+  .item-box tr:last-child td { border-bottom:none; }
+  .item-name { color:#1f2d3d; font-size:12px; font-weight:normal; }
+  .item-meta { color:#7d8996; font-size:11px; font-weight:normal; }
+  .item-value { color:#1f2d3d; font-size:12px; font-weight:bold; white-space:normal; word-break:normal; word-wrap:break-word; overflow-wrap:break-word; }
+
+  .links { margin-top:6px; text-align:right; }
+  .actionTable { border-collapse:collapse !important; mso-table-lspace:0pt; mso-table-rspace:0pt; }
+  .actionWrapDisaster { border:1px solid #db7d88; padding:0; background:#fbe4e6; }
+  .actionWrapHigh { border:1px solid #d89ab8; padding:0; background:#fbe8f3; }
+  .actionWrapAverage { border:1px solid #efb27b; padding:0; background:#fff0e2; }
+  .actionWrapWarning { border:1px solid #dfc55f; padding:0; background:#fff8d9; }
+  .actionWrapInformation { border:1px solid #cbd5e1; padding:0; background:#f1f5f9; }
+  .actionWrapInformational { border:1px solid #cbd5e1; padding:0; background:#f1f5f9; }
+  .actionWrapNot { border:1px solid #cbd5e1; padding:0; background:#f1f5f9; }
+  .actionWrapOk { border:1px solid #79b68b; padding:0; background:#eef8f1; }
+  .actionTdDisaster { padding:4px 8px; border-left:1px solid #db7d88; background:#fbe4e6; line-height:1.1; font-size:13px; font-weight:bold; white-space:nowrap; }
+  .actionTdHigh { padding:4px 8px; border-left:1px solid #d89ab8; background:#fbe8f3; line-height:1.1; font-size:13px; font-weight:bold; white-space:nowrap; }
+  .actionTdAverage { padding:4px 8px; border-left:1px solid #efb27b; background:#fff0e2; line-height:1.1; font-size:13px; font-weight:bold; white-space:nowrap; }
+  .actionTdWarning { padding:4px 8px; border-left:1px solid #dfc55f; background:#fff8d9; line-height:1.1; font-size:13px; font-weight:bold; white-space:nowrap; }
+  .actionTdInformation { padding:4px 8px; border-left:1px solid #cbd5e1; background:#f1f5f9; line-height:1.1; font-size:13px; font-weight:bold; white-space:nowrap; }
+  .actionTdInformational { padding:4px 8px; border-left:1px solid #cbd5e1; background:#f1f5f9; line-height:1.1; font-size:13px; font-weight:bold; white-space:nowrap; }
+  .actionTdNot { padding:4px 8px; border-left:1px solid #cbd5e1; background:#f1f5f9; line-height:1.1; font-size:13px; font-weight:bold; white-space:nowrap; }
+  .actionTdOk { padding:4px 8px; border-left:1px solid #79b68b; background:#eef8f1; line-height:1.1; font-size:13px; font-weight:bold; white-space:nowrap; }
+  .actionLinkDisaster { color:#7f1d1d !important; text-decoration:none; font-weight:bold; }
+  .actionLinkHigh { color:#7a294f !important; text-decoration:none; font-weight:bold; }
+  .actionLinkAverage { color:#7c3f0f !important; text-decoration:none; font-weight:bold; }
+  .actionLinkWarning { color:#6b5b10 !important; text-decoration:none; font-weight:bold; }
+  .actionLinkInformation { color:#334155 !important; text-decoration:none; font-weight:bold; }
+  .actionLinkInformational { color:#334155 !important; text-decoration:none; font-weight:bold; }
+  .actionLinkNot { color:#334155 !important; text-decoration:none; font-weight:bold; }
+  .actionLinkOk { color:#276749 !important; text-decoration:none; font-weight:bold; }
+
+  .footer { background:#f8fafc; border-top:1px solid #e5eaf0; color:#6b7280; font-size:11px; padding:6px 8px; }
+
+  /*
+    v4 severity fix:
+    Outlook may ignore later classes when an element has multiple class names.
+    These templates therefore use exactly ONE severity class on colored elements:
+      sevBlock{TRIGGER.SEVERITY} and sevBadge{TRIGGER.SEVERITY}
+    Example after macro expansion:
+      class="sevBlockDisaster"
+      class="sevBadgeDisaster"
+  */
+
+  /* Disaster = soft red */
+  .sevBlockDisaster { background-color:#fbe4e6 !important; border-left-color:#db7d88 !important; }
+  .sevBadgeDisaster { background-color:#f7cfd4 !important; border-color:#e5a7af !important; color:#8f1f2c !important; }
+
+  /* High = soft pink */
+  .sevBlockHigh { background-color:#fbe8f3 !important; border-left-color:#d89ab8 !important; }
+  .sevBadgeHigh { background-color:#f7d8e7 !important; border-color:#e4b6cd !important; color:#8a3462 !important; }
+
+  /* Average = soft orange */
+  .sevBlockAverage { background-color:#fff0e2 !important; border-left-color:#efb27b !important; }
+  .sevBadgeAverage { background-color:#ffe0c2 !important; border-color:#edbe8d !important; color:#91541a !important; }
+
+  /* Warning = soft yellow */
+  .sevBlockWarning { background-color:#fff8d9 !important; border-left-color:#dfc55f !important; }
+  .sevBadgeWarning { background-color:#fff0b8 !important; border-color:#e7d484 !important; color:#7a6712 !important; }
+
+  /* Information / Informational / Not classified / fallback = soft blue */
+  .sevBlockInformation { background-color:#eaf4ff !important; border-left-color:#8fbce8 !important; }
+  .sevBlockInformational { background-color:#eaf4ff !important; border-left-color:#8fbce8 !important; }
+  .sevBlockNot { background-color:#eaf4ff !important; border-left-color:#8fbce8 !important; }
+  .sevBadgeInformation { background-color:#dcebff !important; border-color:#b7d3f3 !important; color:#24527a !important; }
+  .sevBadgeInformational { background-color:#dcebff !important; border-color:#b7d3f3 !important; color:#24527a !important; }
+  .sevBadgeNot { background-color:#dcebff !important; border-color:#b7d3f3 !important; color:#24527a !important; }
+
+  /* Severity-matched title/icon/action text colors */
+  .sevTitleDisaster { font-size:16px; font-weight:bold; color:#7f1d1d !important; line-height:1.12; margin-bottom:2px; }
+  .sevTitleHigh { font-size:16px; font-weight:bold; color:#7a294f !important; line-height:1.12; margin-bottom:2px; }
+  .sevTitleAverage { font-size:16px; font-weight:bold; color:#7c3f0f !important; line-height:1.12; margin-bottom:2px; }
+  .sevTitleWarning { font-size:16px; font-weight:bold; color:#6b5b10 !important; line-height:1.12; margin-bottom:2px; }
+  .sevTitleInformation { font-size:16px; font-weight:bold; color:#334155 !important; line-height:1.12; margin-bottom:2px; }
+  .sevTitleInformational { font-size:16px; font-weight:bold; color:#334155 !important; line-height:1.12; margin-bottom:2px; }
+  .sevTitleNot { font-size:16px; font-weight:bold; color:#334155 !important; line-height:1.12; margin-bottom:2px; }
+  .sevIconDisaster { color:#7f1d1d !important; }
+  .sevIconHigh { color:#7a294f !important; }
+  .sevIconAverage { color:#7c3f0f !important; }
+  .sevIconWarning { color:#6b5b10 !important; }
+  .sevIconInformation { color:#334155 !important; }
+  .sevIconInformational { color:#334155 !important; }
+  .sevIconNot { color:#334155 !important; }
+  .okIcon { color:#244b31 !important; }
+
+  /* Recovery-specific green */
+  .resolved-bg { background-color:#e7f5ea !important; border-left-color:#79b68b !important; }
+  .resolved-box { background-color:#eef8f1 !important; border-left-color:#79b68b !important; }
+  .ok-badge { background-color:#dff2e4 !important; border-color:#b9d9c1 !important; color:#2f6b42 !important; }
+
+  /* Static helper colors for non-trigger templates */
+  .blue-bg { background-color:#eaf4ff !important; border-left-color:#8fbce8 !important; }
+  .green-bg { background-color:#e7f5ea !important; border-left-color:#79b68b !important; }
+  .red-bg { background-color:#fbe4e6 !important; border-left-color:#db7d88 !important; }
+  .amber-bg { background-color:#fff8d9 !important; border-left-color:#dfc55f !important; }
+</style>
+</head>
+<body>
+<table width="100%" cellpadding="0" cellspacing="0" border="0">
+<tr><td align="center" class="outer">
+<table class="wrap" cellpadding="0" cellspacing="0" border="0" style="width:520px; min-width:520px; max-width:676px;">
+<tr><td class="amber-bg" style="padding:8px 16px; border-bottom:1px solid #d8e2ee;"><div style="font-size:17px; font-weight:bold; color:#7a6712;">Service updated</div></td></tr>
+<tr><td class="body-pad">
+  <table class="details" cellpadding="0" cellspacing="0" border="0">
+    <tr><td class="label">Service</td><td class="big-value">{SERVICE.NAME}</td></tr>
+    <tr><td class="label">Status</td><td>{SERVICE.STATUS}</td></tr>
+    <tr><td class="label">Description</td><td>{SERVICE.DESCRIPTION}</td></tr>
+    <tr><td class="label">Root cause</td><td>{SERVICE.ROOTCAUSE}</td></tr>
+    <tr><td class="label">Tags</td><td>{SERVICE.TAGS}</td></tr>
+    <tr><td class="label">Update</td><td><strong>User:</strong> {USER.FULLNAME}<br><strong>Action:</strong> {EVENT.UPDATE.ACTION}<br><strong>Message:</strong> {EVENT.UPDATE.MESSAGE}<br><strong>Last update:</strong> {EVENT.UPDATE.DATE} {EVENT.UPDATE.TIME}</td></tr>
+    <tr><td class="label">Event ID</td><td>{EVENT.ID}</td></tr>
+  </table>
+  <div style="height:8px;"></div>
+</td></tr>
+<tr><td class="footer">Zabbix service update notification from <a href="https://zabbix01.example.local/" style="color:#6b7280 !important; text-decoration:none; font-weight:normal;">zabbix01.example.local</a></td></tr>
+</table>
+</td></tr>
+</table>
+</body>
+</html>
+
+
+================================================================================
+
+Message type: Internal problem
+Subject: INTERNAL PROBLEM: {EVENT.NAME}
+Message:
+<!DOCTYPE html>
+<html>
+<!-- Template version: v26; Purpose: Internal problem notification -->
+<head>
+<meta http-equiv="Content-type" content="text/html; charset=utf-8">
+<style type="text/css">
+  body { margin:0; padding:0; background-color:#f4f7fb; font-family:Arial, Helvetica, sans-serif; color:#2f3a4a; }
+  table { border-collapse:collapse; }
+  a { color:#1d4ed8; text-decoration:none; }
+
+  .outer { padding:10px; }
+  .wrap { width:520px; min-width:520px; max-width:676px; background:#ffffff; border:1px solid #dce6f2; }
+
+  .top-title { font-size:17px; font-weight:bold; color:#1f2d3d; }
+  .top-status { font-size:14px; font-weight:bold; color:#1f2d3d; text-align:right; white-space:nowrap; }
+  .resolved-title { color:#244b31 !important; }
+
+  .body-pad { padding:7px 8px 0 8px; }
+  .issue-title { font-size:16px; font-weight:bold; color:#374151; line-height:1.12; margin-bottom:2px; }
+  .issue-title-ok { font-size:16px; font-weight:bold; color:#276749; line-height:1.12; margin-bottom:2px; }
+  .resolvedTitle { font-size:16px; font-weight:bold; color:#276749 !important; line-height:1.12; margin-bottom:2px; }
+  .issue-meta { font-size:12px; color:#4f6072; line-height:1.12; }
+
+  .details { width:100%; border:1px solid #d9e2ec; margin-top:5px; table-layout:fixed; }
+  .details td { padding:2px 6px; border:1px solid #d9e2ec; vertical-align:middle; font-size:12.5px; line-height:1.05; word-break:normal; word-wrap:break-word; overflow-wrap:break-word; }
+  .label { width:116px; color:#5a6777; background:#f8fafc; white-space:nowrap; }
+  .host-value { font-size:18px; font-weight:bold; color:#1f2d3d; line-height:1.0; }
+  .big-value { font-size:18px; font-weight:bold; color:#1f2d3d; line-height:1.0; }
+  .muted { color:#6c7a89; font-size:12px; font-weight:normal; }
+
+  .section-title { margin-top:6px; margin-bottom:3px; font-size:13px; font-weight:bold; color:#334155; }
+  .item-box { width:100%; max-width:100%; border:1px solid #d9e2ec; table-layout:fixed; }
+  .item-box th { padding:3px 6px; border-bottom:1px solid #d9e2ec; background:#f8fafc; color:#5a6777; font-size:12px; line-height:1.1; text-align:left; font-weight:bold; word-break:normal; word-wrap:break-word; overflow-wrap:break-word; }
+  .item-box td { padding:3px 6px; border-bottom:1px solid #e6edf4; vertical-align:top; font-size:12px; line-height:1.12; word-break:normal; word-wrap:break-word; overflow-wrap:break-word; }
+  .item-box tr:last-child td { border-bottom:none; }
+  .item-name { color:#1f2d3d; font-size:12px; font-weight:normal; }
+  .item-meta { color:#7d8996; font-size:11px; font-weight:normal; }
+  .item-value { color:#1f2d3d; font-size:12px; font-weight:bold; white-space:normal; word-break:normal; word-wrap:break-word; overflow-wrap:break-word; }
+
+  .links { margin-top:6px; text-align:right; }
+  .actionTable { border-collapse:collapse !important; mso-table-lspace:0pt; mso-table-rspace:0pt; }
+  .actionWrapDisaster { border:1px solid #db7d88; padding:0; background:#fbe4e6; }
+  .actionWrapHigh { border:1px solid #d89ab8; padding:0; background:#fbe8f3; }
+  .actionWrapAverage { border:1px solid #efb27b; padding:0; background:#fff0e2; }
+  .actionWrapWarning { border:1px solid #dfc55f; padding:0; background:#fff8d9; }
+  .actionWrapInformation { border:1px solid #cbd5e1; padding:0; background:#f1f5f9; }
+  .actionWrapInformational { border:1px solid #cbd5e1; padding:0; background:#f1f5f9; }
+  .actionWrapNot { border:1px solid #cbd5e1; padding:0; background:#f1f5f9; }
+  .actionWrapOk { border:1px solid #79b68b; padding:0; background:#eef8f1; }
+  .actionTdDisaster { padding:4px 8px; border-left:1px solid #db7d88; background:#fbe4e6; line-height:1.1; font-size:13px; font-weight:bold; white-space:nowrap; }
+  .actionTdHigh { padding:4px 8px; border-left:1px solid #d89ab8; background:#fbe8f3; line-height:1.1; font-size:13px; font-weight:bold; white-space:nowrap; }
+  .actionTdAverage { padding:4px 8px; border-left:1px solid #efb27b; background:#fff0e2; line-height:1.1; font-size:13px; font-weight:bold; white-space:nowrap; }
+  .actionTdWarning { padding:4px 8px; border-left:1px solid #dfc55f; background:#fff8d9; line-height:1.1; font-size:13px; font-weight:bold; white-space:nowrap; }
+  .actionTdInformation { padding:4px 8px; border-left:1px solid #cbd5e1; background:#f1f5f9; line-height:1.1; font-size:13px; font-weight:bold; white-space:nowrap; }
+  .actionTdInformational { padding:4px 8px; border-left:1px solid #cbd5e1; background:#f1f5f9; line-height:1.1; font-size:13px; font-weight:bold; white-space:nowrap; }
+  .actionTdNot { padding:4px 8px; border-left:1px solid #cbd5e1; background:#f1f5f9; line-height:1.1; font-size:13px; font-weight:bold; white-space:nowrap; }
+  .actionTdOk { padding:4px 8px; border-left:1px solid #79b68b; background:#eef8f1; line-height:1.1; font-size:13px; font-weight:bold; white-space:nowrap; }
+  .actionLinkDisaster { color:#7f1d1d !important; text-decoration:none; font-weight:bold; }
+  .actionLinkHigh { color:#7a294f !important; text-decoration:none; font-weight:bold; }
+  .actionLinkAverage { color:#7c3f0f !important; text-decoration:none; font-weight:bold; }
+  .actionLinkWarning { color:#6b5b10 !important; text-decoration:none; font-weight:bold; }
+  .actionLinkInformation { color:#334155 !important; text-decoration:none; font-weight:bold; }
+  .actionLinkInformational { color:#334155 !important; text-decoration:none; font-weight:bold; }
+  .actionLinkNot { color:#334155 !important; text-decoration:none; font-weight:bold; }
+  .actionLinkOk { color:#276749 !important; text-decoration:none; font-weight:bold; }
+
+  .footer { background:#f8fafc; border-top:1px solid #e5eaf0; color:#6b7280; font-size:11px; padding:6px 8px; }
+
+  /*
+    v4 severity fix:
+    Outlook may ignore later classes when an element has multiple class names.
+    These templates therefore use exactly ONE severity class on colored elements:
+      sevBlock{TRIGGER.SEVERITY} and sevBadge{TRIGGER.SEVERITY}
+    Example after macro expansion:
+      class="sevBlockDisaster"
+      class="sevBadgeDisaster"
+  */
+
+  /* Disaster = soft red */
+  .sevBlockDisaster { background-color:#fbe4e6 !important; border-left-color:#db7d88 !important; }
+  .sevBadgeDisaster { background-color:#f7cfd4 !important; border-color:#e5a7af !important; color:#8f1f2c !important; }
+
+  /* High = soft pink */
+  .sevBlockHigh { background-color:#fbe8f3 !important; border-left-color:#d89ab8 !important; }
+  .sevBadgeHigh { background-color:#f7d8e7 !important; border-color:#e4b6cd !important; color:#8a3462 !important; }
+
+  /* Average = soft orange */
+  .sevBlockAverage { background-color:#fff0e2 !important; border-left-color:#efb27b !important; }
+  .sevBadgeAverage { background-color:#ffe0c2 !important; border-color:#edbe8d !important; color:#91541a !important; }
+
+  /* Warning = soft yellow */
+  .sevBlockWarning { background-color:#fff8d9 !important; border-left-color:#dfc55f !important; }
+  .sevBadgeWarning { background-color:#fff0b8 !important; border-color:#e7d484 !important; color:#7a6712 !important; }
+
+  /* Information / Informational / Not classified / fallback = soft blue */
+  .sevBlockInformation { background-color:#eaf4ff !important; border-left-color:#8fbce8 !important; }
+  .sevBlockInformational { background-color:#eaf4ff !important; border-left-color:#8fbce8 !important; }
+  .sevBlockNot { background-color:#eaf4ff !important; border-left-color:#8fbce8 !important; }
+  .sevBadgeInformation { background-color:#dcebff !important; border-color:#b7d3f3 !important; color:#24527a !important; }
+  .sevBadgeInformational { background-color:#dcebff !important; border-color:#b7d3f3 !important; color:#24527a !important; }
+  .sevBadgeNot { background-color:#dcebff !important; border-color:#b7d3f3 !important; color:#24527a !important; }
+
+  /* Severity-matched title/icon/action text colors */
+  .sevTitleDisaster { font-size:16px; font-weight:bold; color:#7f1d1d !important; line-height:1.12; margin-bottom:2px; }
+  .sevTitleHigh { font-size:16px; font-weight:bold; color:#7a294f !important; line-height:1.12; margin-bottom:2px; }
+  .sevTitleAverage { font-size:16px; font-weight:bold; color:#7c3f0f !important; line-height:1.12; margin-bottom:2px; }
+  .sevTitleWarning { font-size:16px; font-weight:bold; color:#6b5b10 !important; line-height:1.12; margin-bottom:2px; }
+  .sevTitleInformation { font-size:16px; font-weight:bold; color:#334155 !important; line-height:1.12; margin-bottom:2px; }
+  .sevTitleInformational { font-size:16px; font-weight:bold; color:#334155 !important; line-height:1.12; margin-bottom:2px; }
+  .sevTitleNot { font-size:16px; font-weight:bold; color:#334155 !important; line-height:1.12; margin-bottom:2px; }
+  .sevIconDisaster { color:#7f1d1d !important; }
+  .sevIconHigh { color:#7a294f !important; }
+  .sevIconAverage { color:#7c3f0f !important; }
+  .sevIconWarning { color:#6b5b10 !important; }
+  .sevIconInformation { color:#334155 !important; }
+  .sevIconInformational { color:#334155 !important; }
+  .sevIconNot { color:#334155 !important; }
+  .okIcon { color:#244b31 !important; }
+
+  /* Recovery-specific green */
+  .resolved-bg { background-color:#e7f5ea !important; border-left-color:#79b68b !important; }
+  .resolved-box { background-color:#eef8f1 !important; border-left-color:#79b68b !important; }
+  .ok-badge { background-color:#dff2e4 !important; border-color:#b9d9c1 !important; color:#2f6b42 !important; }
+
+  /* Static helper colors for non-trigger templates */
+  .blue-bg { background-color:#eaf4ff !important; border-left-color:#8fbce8 !important; }
+  .green-bg { background-color:#e7f5ea !important; border-left-color:#79b68b !important; }
+  .red-bg { background-color:#fbe4e6 !important; border-left-color:#db7d88 !important; }
+  .amber-bg { background-color:#fff8d9 !important; border-left-color:#dfc55f !important; }
+</style>
+</head>
+<body>
+<table width="100%" cellpadding="0" cellspacing="0" border="0">
+<tr><td align="center" class="outer">
+<table class="wrap" cellpadding="0" cellspacing="0" border="0" style="width:520px; min-width:520px; max-width:676px;">
+<tr><td class="red-bg" style="padding:8px 16px; border-bottom:1px solid #d8e2ee;"><div style="font-size:17px; font-weight:bold; color:#8f1f2c;">⚠ Internal problem</div></td></tr>
+<tr><td class="body-pad">
+  <table class="details" cellpadding="0" cellspacing="0" border="0">
+    <tr><td class="label">Event</td><td class="big-value">{EVENT.NAME}</td></tr>
+    <tr><td class="label">Status</td><td>{EVENT.STATUS}</td></tr>
+    <tr><td class="label">Host</td><td>{HOST.NAME}</td></tr>
+    <tr><td class="label">Item</td><td>{ITEM.NAME} <span class="muted">({ITEM.KEY})</span></td></tr>
+    <tr><td class="label">Item state</td><td>{ITEM.STATE}</td></tr>
+    <tr><td class="label">Item error</td><td>{ITEM.STATE.ERROR}</td></tr>
+    <tr><td class="label">Trigger</td><td>{TRIGGER.NAME}</td></tr>
+    <tr><td class="label">Trigger state</td><td>{TRIGGER.STATE}</td></tr>
+    <tr><td class="label">Trigger error</td><td>{TRIGGER.STATE.ERROR}</td></tr>
+    <tr><td class="label">Problem started</td><td>{EVENT.DATE} {EVENT.TIME}</td></tr>
+    <tr><td class="label">Event ID</td><td>{EVENT.ID}</td></tr>
+  </table>
+  <div style="height:8px;"></div>
+</td></tr>
+<tr><td class="footer">Zabbix internal notification from <a href="https://zabbix01.example.local/" style="color:#6b7280 !important; text-decoration:none; font-weight:normal;">zabbix01.example.local</a></td></tr>
+</table>
+</td></tr>
+</table>
+</body>
+</html>
+
+
+================================================================================
+
+Message type: Internal problem recovery
+Subject: INTERNAL RESOLVED: {EVENT.NAME}
+Message:
+<!DOCTYPE html>
+<html>
+<!-- Template version: v26; Purpose: Internal problem recovery notification -->
+<head>
+<meta http-equiv="Content-type" content="text/html; charset=utf-8">
+<style type="text/css">
+  body { margin:0; padding:0; background-color:#f4f7fb; font-family:Arial, Helvetica, sans-serif; color:#2f3a4a; }
+  table { border-collapse:collapse; }
+  a { color:#1d4ed8; text-decoration:none; }
+
+  .outer { padding:10px; }
+  .wrap { width:520px; min-width:520px; max-width:676px; background:#ffffff; border:1px solid #dce6f2; }
+
+  .top-title { font-size:17px; font-weight:bold; color:#1f2d3d; }
+  .top-status { font-size:14px; font-weight:bold; color:#1f2d3d; text-align:right; white-space:nowrap; }
+  .resolved-title { color:#244b31 !important; }
+
+  .body-pad { padding:7px 8px 0 8px; }
+  .issue-title { font-size:16px; font-weight:bold; color:#374151; line-height:1.12; margin-bottom:2px; }
+  .issue-title-ok { font-size:16px; font-weight:bold; color:#276749; line-height:1.12; margin-bottom:2px; }
+  .resolvedTitle { font-size:16px; font-weight:bold; color:#276749 !important; line-height:1.12; margin-bottom:2px; }
+  .issue-meta { font-size:12px; color:#4f6072; line-height:1.12; }
+
+  .details { width:100%; border:1px solid #d9e2ec; margin-top:5px; table-layout:fixed; }
+  .details td { padding:2px 6px; border:1px solid #d9e2ec; vertical-align:middle; font-size:12.5px; line-height:1.05; word-break:normal; word-wrap:break-word; overflow-wrap:break-word; }
+  .label { width:116px; color:#5a6777; background:#f8fafc; white-space:nowrap; }
+  .host-value { font-size:18px; font-weight:bold; color:#1f2d3d; line-height:1.0; }
+  .big-value { font-size:18px; font-weight:bold; color:#1f2d3d; line-height:1.0; }
+  .muted { color:#6c7a89; font-size:12px; font-weight:normal; }
+
+  .section-title { margin-top:6px; margin-bottom:3px; font-size:13px; font-weight:bold; color:#334155; }
+  .item-box { width:100%; max-width:100%; border:1px solid #d9e2ec; table-layout:fixed; }
+  .item-box th { padding:3px 6px; border-bottom:1px solid #d9e2ec; background:#f8fafc; color:#5a6777; font-size:12px; line-height:1.1; text-align:left; font-weight:bold; word-break:normal; word-wrap:break-word; overflow-wrap:break-word; }
+  .item-box td { padding:3px 6px; border-bottom:1px solid #e6edf4; vertical-align:top; font-size:12px; line-height:1.12; word-break:normal; word-wrap:break-word; overflow-wrap:break-word; }
+  .item-box tr:last-child td { border-bottom:none; }
+  .item-name { color:#1f2d3d; font-size:12px; font-weight:normal; }
+  .item-meta { color:#7d8996; font-size:11px; font-weight:normal; }
+  .item-value { color:#1f2d3d; font-size:12px; font-weight:bold; white-space:normal; word-break:normal; word-wrap:break-word; overflow-wrap:break-word; }
+
+  .links { margin-top:6px; text-align:right; }
+  .actionTable { border-collapse:collapse !important; mso-table-lspace:0pt; mso-table-rspace:0pt; }
+  .actionWrapDisaster { border:1px solid #db7d88; padding:0; background:#fbe4e6; }
+  .actionWrapHigh { border:1px solid #d89ab8; padding:0; background:#fbe8f3; }
+  .actionWrapAverage { border:1px solid #efb27b; padding:0; background:#fff0e2; }
+  .actionWrapWarning { border:1px solid #dfc55f; padding:0; background:#fff8d9; }
+  .actionWrapInformation { border:1px solid #cbd5e1; padding:0; background:#f1f5f9; }
+  .actionWrapInformational { border:1px solid #cbd5e1; padding:0; background:#f1f5f9; }
+  .actionWrapNot { border:1px solid #cbd5e1; padding:0; background:#f1f5f9; }
+  .actionWrapOk { border:1px solid #79b68b; padding:0; background:#eef8f1; }
+  .actionTdDisaster { padding:4px 8px; border-left:1px solid #db7d88; background:#fbe4e6; line-height:1.1; font-size:13px; font-weight:bold; white-space:nowrap; }
+  .actionTdHigh { padding:4px 8px; border-left:1px solid #d89ab8; background:#fbe8f3; line-height:1.1; font-size:13px; font-weight:bold; white-space:nowrap; }
+  .actionTdAverage { padding:4px 8px; border-left:1px solid #efb27b; background:#fff0e2; line-height:1.1; font-size:13px; font-weight:bold; white-space:nowrap; }
+  .actionTdWarning { padding:4px 8px; border-left:1px solid #dfc55f; background:#fff8d9; line-height:1.1; font-size:13px; font-weight:bold; white-space:nowrap; }
+  .actionTdInformation { padding:4px 8px; border-left:1px solid #cbd5e1; background:#f1f5f9; line-height:1.1; font-size:13px; font-weight:bold; white-space:nowrap; }
+  .actionTdInformational { padding:4px 8px; border-left:1px solid #cbd5e1; background:#f1f5f9; line-height:1.1; font-size:13px; font-weight:bold; white-space:nowrap; }
+  .actionTdNot { padding:4px 8px; border-left:1px solid #cbd5e1; background:#f1f5f9; line-height:1.1; font-size:13px; font-weight:bold; white-space:nowrap; }
+  .actionTdOk { padding:4px 8px; border-left:1px solid #79b68b; background:#eef8f1; line-height:1.1; font-size:13px; font-weight:bold; white-space:nowrap; }
+  .actionLinkDisaster { color:#7f1d1d !important; text-decoration:none; font-weight:bold; }
+  .actionLinkHigh { color:#7a294f !important; text-decoration:none; font-weight:bold; }
+  .actionLinkAverage { color:#7c3f0f !important; text-decoration:none; font-weight:bold; }
+  .actionLinkWarning { color:#6b5b10 !important; text-decoration:none; font-weight:bold; }
+  .actionLinkInformation { color:#334155 !important; text-decoration:none; font-weight:bold; }
+  .actionLinkInformational { color:#334155 !important; text-decoration:none; font-weight:bold; }
+  .actionLinkNot { color:#334155 !important; text-decoration:none; font-weight:bold; }
+  .actionLinkOk { color:#276749 !important; text-decoration:none; font-weight:bold; }
+
+  .footer { background:#f8fafc; border-top:1px solid #e5eaf0; color:#6b7280; font-size:11px; padding:6px 8px; }
+
+  /*
+    v4 severity fix:
+    Outlook may ignore later classes when an element has multiple class names.
+    These templates therefore use exactly ONE severity class on colored elements:
+      sevBlock{TRIGGER.SEVERITY} and sevBadge{TRIGGER.SEVERITY}
+    Example after macro expansion:
+      class="sevBlockDisaster"
+      class="sevBadgeDisaster"
+  */
+
+  /* Disaster = soft red */
+  .sevBlockDisaster { background-color:#fbe4e6 !important; border-left-color:#db7d88 !important; }
+  .sevBadgeDisaster { background-color:#f7cfd4 !important; border-color:#e5a7af !important; color:#8f1f2c !important; }
+
+  /* High = soft pink */
+  .sevBlockHigh { background-color:#fbe8f3 !important; border-left-color:#d89ab8 !important; }
+  .sevBadgeHigh { background-color:#f7d8e7 !important; border-color:#e4b6cd !important; color:#8a3462 !important; }
+
+  /* Average = soft orange */
+  .sevBlockAverage { background-color:#fff0e2 !important; border-left-color:#efb27b !important; }
+  .sevBadgeAverage { background-color:#ffe0c2 !important; border-color:#edbe8d !important; color:#91541a !important; }
+
+  /* Warning = soft yellow */
+  .sevBlockWarning { background-color:#fff8d9 !important; border-left-color:#dfc55f !important; }
+  .sevBadgeWarning { background-color:#fff0b8 !important; border-color:#e7d484 !important; color:#7a6712 !important; }
+
+  /* Information / Informational / Not classified / fallback = soft blue */
+  .sevBlockInformation { background-color:#eaf4ff !important; border-left-color:#8fbce8 !important; }
+  .sevBlockInformational { background-color:#eaf4ff !important; border-left-color:#8fbce8 !important; }
+  .sevBlockNot { background-color:#eaf4ff !important; border-left-color:#8fbce8 !important; }
+  .sevBadgeInformation { background-color:#dcebff !important; border-color:#b7d3f3 !important; color:#24527a !important; }
+  .sevBadgeInformational { background-color:#dcebff !important; border-color:#b7d3f3 !important; color:#24527a !important; }
+  .sevBadgeNot { background-color:#dcebff !important; border-color:#b7d3f3 !important; color:#24527a !important; }
+
+  /* Severity-matched title/icon/action text colors */
+  .sevTitleDisaster { font-size:16px; font-weight:bold; color:#7f1d1d !important; line-height:1.12; margin-bottom:2px; }
+  .sevTitleHigh { font-size:16px; font-weight:bold; color:#7a294f !important; line-height:1.12; margin-bottom:2px; }
+  .sevTitleAverage { font-size:16px; font-weight:bold; color:#7c3f0f !important; line-height:1.12; margin-bottom:2px; }
+  .sevTitleWarning { font-size:16px; font-weight:bold; color:#6b5b10 !important; line-height:1.12; margin-bottom:2px; }
+  .sevTitleInformation { font-size:16px; font-weight:bold; color:#334155 !important; line-height:1.12; margin-bottom:2px; }
+  .sevTitleInformational { font-size:16px; font-weight:bold; color:#334155 !important; line-height:1.12; margin-bottom:2px; }
+  .sevTitleNot { font-size:16px; font-weight:bold; color:#334155 !important; line-height:1.12; margin-bottom:2px; }
+  .sevIconDisaster { color:#7f1d1d !important; }
+  .sevIconHigh { color:#7a294f !important; }
+  .sevIconAverage { color:#7c3f0f !important; }
+  .sevIconWarning { color:#6b5b10 !important; }
+  .sevIconInformation { color:#334155 !important; }
+  .sevIconInformational { color:#334155 !important; }
+  .sevIconNot { color:#334155 !important; }
+  .okIcon { color:#244b31 !important; }
+
+  /* Recovery-specific green */
+  .resolved-bg { background-color:#e7f5ea !important; border-left-color:#79b68b !important; }
+  .resolved-box { background-color:#eef8f1 !important; border-left-color:#79b68b !important; }
+  .ok-badge { background-color:#dff2e4 !important; border-color:#b9d9c1 !important; color:#2f6b42 !important; }
+
+  /* Static helper colors for non-trigger templates */
+  .blue-bg { background-color:#eaf4ff !important; border-left-color:#8fbce8 !important; }
+  .green-bg { background-color:#e7f5ea !important; border-left-color:#79b68b !important; }
+  .red-bg { background-color:#fbe4e6 !important; border-left-color:#db7d88 !important; }
+  .amber-bg { background-color:#fff8d9 !important; border-left-color:#dfc55f !important; }
+</style>
+</head>
+<body>
+<table width="100%" cellpadding="0" cellspacing="0" border="0">
+<tr><td align="center" class="outer">
+<table class="wrap" cellpadding="0" cellspacing="0" border="0" style="width:520px; min-width:520px; max-width:676px;">
+<tr><td class="green-bg" style="padding:8px 16px; border-bottom:1px solid #d8e2ee;"><div style="font-size:17px; font-weight:bold; color:#244b31;">✔ Internal problem resolved</div></td></tr>
+<tr><td class="body-pad">
+  <table class="details" cellpadding="0" cellspacing="0" border="0">
+    <tr><td class="label">Event</td><td class="big-value">{EVENT.NAME}</td></tr>
+    <tr><td class="label">Status</td><td>{EVENT.STATUS}</td></tr>
+    <tr><td class="label">Host</td><td>{HOST.NAME}</td></tr>
+    <tr><td class="label">Item</td><td>{ITEM.NAME} <span class="muted">({ITEM.KEY})</span></td></tr>
+    <tr><td class="label">Item state</td><td>{ITEM.STATE}</td></tr>
+    <tr><td class="label">Item error</td><td>{ITEM.STATE.ERROR}</td></tr>
+    <tr><td class="label">Trigger</td><td>{TRIGGER.NAME}</td></tr>
+    <tr><td class="label">Trigger state</td><td>{TRIGGER.STATE}</td></tr>
+    <tr><td class="label">Trigger error</td><td>{TRIGGER.STATE.ERROR}</td></tr>
+    <tr><td class="label">Problem started</td><td>{EVENT.DATE} {EVENT.TIME}</td></tr>
+    <tr><td class="label">Event ID</td><td>{EVENT.ID}</td></tr>
+  </table>
+  <div style="height:8px;"></div>
+</td></tr>
+<tr><td class="footer">Zabbix internal recovery notification from <a href="https://zabbix01.example.local/" style="color:#6b7280 !important; text-decoration:none; font-weight:normal;">zabbix01.example.local</a></td></tr>
+</table>
+</td></tr>
+</table>
+</body>
+</html>
